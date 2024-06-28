@@ -11,6 +11,8 @@ GameObject:
   - component: {fileID: 5442965118152006652}
   - component: {fileID: 2182230129836366896}
   - component: {fileID: 4240964289365628689}
+  - component: {fileID: 2306354069165018522}
+  - component: {fileID: -8140074430868042243}
   m_Layer: 5
   m_Name: Inventory Item
   m_TagString: Untagged
@@ -75,3 +77,29 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!225 &2306354069165018522
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5102581242552598893}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 1
+  m_BlocksRaycasts: 1
+  m_IgnoreParentGroups: 0
+--- !u!114 &-8140074430868042243
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5102581242552598893}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d9abec63744f3144eb8fe0e9196d1f24, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  amount: 0
+  slot: 0

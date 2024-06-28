@@ -8,7 +8,7 @@ public class ItemDataBase : MonoBehaviour
     public List<Item> dataBase = new List<Item>();
     private ItemData itemData;
 
-    void Start()
+    void Awake()
     {
         if (DataManager.instance != null)
         {
