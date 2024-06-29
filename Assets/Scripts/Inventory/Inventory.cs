@@ -4,9 +4,14 @@ using TMPro;
 using UnityEngine;
 using static UnityEditor.Progress;
 using UnityEngine.UI;
+using System.IO;
+using Newtonsoft.Json;
 
 public class Inventory : MonoBehaviour
 {
+    private CameraController cameraController;
+
+    public GameObject inventoryPanel;
     public GameObject slotPanel;
     public GameObject inventorySlot;
     public GameObject inventoryItem;
@@ -22,13 +27,29 @@ public class Inventory : MonoBehaviour
 
     // 아이템 변경 플래그
     public bool itemsChanged = false;
+    
+    public bool activeInventory = false;
+
+    public GameObject confirmationDialog; // 확인 대화상자
+    public Button confirmButton; // 확인 버튼
+    public Button cancelButton; // 취소 버튼
+    public TextMeshProUGUI confirmationText; // 확인 메시지 텍스트
+
+
+    public GameObject stackableConfirmationDialog; // 확인 대화상자
+    public Button stackableConfirmButton; // 확인 버튼
+    public Button stackableCancelButton; // 취소 버튼
+    public TMP_InputField CountInputField; // 판매 수량 입력 필드
 
     // Start is called before the first frame update
     void Start()
     {
+        cameraController = GameObject.Find("Camera").GetComponent<CameraController>();
+        itemdataBase = GameObject.Find("ItemDataBase").GetComponent<ItemDataBase>();
         slotPanel = GameObject.Find("Slot Panel");
-        itemdataBase = GetComponent<ItemDataBase>();
 
+        inventoryPanel = GameObject.Find("Inventory Panel");
+        inventoryPanel.SetActive(activeInventory);
 
         for (int i = 0; i < slotAmount; i++) 
         {
@@ -38,9 +59,95 @@ public class Inventory : MonoBehaviour
             slots[i].transform.SetParent(content.transform, false);
         }
 
-        AddItem(0);
-        AddItem(1);
-        AddItem(2);
+        LoadInventory();
+
+        confirmationDialog.SetActive(false);
+        stackableConfirmationDialog.SetActive(false);
+
+        confirmButton.onClick.AddListener(OnConfirmButtonClick);
+        cancelButton.onClick.AddListener(OnCancelButtonClick);
+
+        stackableConfirmButton.onClick.AddListener(OnStackableConfirmButtonClick);
+        stackableCancelButton.onClick.AddListener(OnStackableCancelButtonClick);
+    }
+
+    public void ShowConfirmationDialog(Item item, int slot)
+    {
+        DialogManager.instance.ShowDialog(confirmationDialog);
+        confirmationText.text = $"'{item.Name}'을(를) 판매하시겠습니까?"; // 확인 메시지 설정
+        confirmButton.onClick.RemoveAllListeners();
+        confirmButton.onClick.AddListener(() => ConfirmSellItem(item, slot));
+    }
+
+    private void ConfirmSellItem(Item item, int slot)
+    {
+        RemoveItem(item.ID, slot);
+        confirmationDialog.SetActive(false);
+    }
+
+    private void OnConfirmButtonClick()
+    {
+        confirmationDialog.SetActive(false);
+    }
+
+    private void OnCancelButtonClick()
+    {
+        confirmationDialog.SetActive(false);
+    }
+
+
+    public void ShowStackableConfirmationDialog(Item item, int slot)
+    {
+        DialogManager.instance.ShowDialog(stackableConfirmationDialog);
+        CountInputField.text = ""; // 입력 필드 초기화
+        stackableConfirmButton.onClick.RemoveAllListeners();
+        stackableConfirmButton.onClick.AddListener(() => ConfirmStackableSellItem(item, slot));
+
+        // onValueChanged 이벤트 설정 (slot 값 전달)
+        CountInputField.onValueChanged.RemoveAllListeners();
+        CountInputField.onValueChanged.AddListener((value) => ValidateInputField(slot));
+
+        // 입력 필드 초기화 및 포커스 설정
+        CountInputField.ActivateInputField();
+        CountInputField.Select();
+    }
+
+    private void ValidateInputField(int slot)
+    {
+        int sellAmount;
+        if (int.TryParse(CountInputField.text, out sellAmount))
+        {
+            int availableAmount = slots[slot].GetComponentInChildren<ItemDT>().amount;
+            if (sellAmount > availableAmount)
+            {
+                CountInputField.text = availableAmount.ToString();
+            }
+        }
+    }
+
+    private void ConfirmStackableSellItem(Item item, int slot)
+    {
+        int sellAmount;
+        if (int.TryParse(CountInputField.text, out sellAmount))
+        {
+            int availableAmount = slots[slot].GetComponentInChildren<ItemDT>().amount;
+
+            if (sellAmount > 0 && sellAmount <= availableAmount)
+            {
+                RemoveItem(item.ID, slot, sellAmount);
+                stackableConfirmationDialog.SetActive(false);
+            }
+        }
+    }
+
+    private void OnStackableConfirmButtonClick()
+    {
+        stackableConfirmationDialog.SetActive(false);
+    }
+
+    private void OnStackableCancelButtonClick()
+    {
+        stackableConfirmationDialog.SetActive(false);
     }
 
     public void AddItem(int id)
@@ -82,6 +189,45 @@ public class Inventory : MonoBehaviour
         itemsChanged = true; // 아이템이 추가되었을 때 플래그 설정
     }
 
+    public void AddItem(int id, int amount)
+    {
+        Item itemToAdd = itemdataBase.FetchItemByID(id);
+        if (itemToAdd.Stackable && CheckIfItemIsInInventory(itemToAdd))
+        {
+            for (int i = 0; i < items.Count; i++)
+            {
+                if (items[i].ID == id)
+                {
+                    ItemDT data = slots[i].transform.GetChild(0).GetComponent<ItemDT>();
+                    data.amount += amount;
+                    break;
+                }
+            }
+        }
+        else
+        {
+            for (int i = 0; i < items.Count; i++)
+            {
+                if (items[i].ID == -1)
+                {
+                    items[i] = itemToAdd;
+                    GameObject itemObj = Instantiate(inventoryItem);
+                    ItemDT itemDT = itemObj.GetComponent<ItemDT>();
+                    itemDT.item = itemToAdd;
+                    itemDT.amount = amount; // 새로운 아이템의 개수는 1로 설정
+                    itemDT.slot = i; // 추가된 아이템의 슬롯 인덱스를 설정
+
+                    itemDT.transform.SetParent(slots[i].transform, false);
+                    itemObj.GetComponent<Image>().sprite = itemToAdd.Icon;
+                    itemObj.name = itemToAdd.Name;
+                    itemObj.GetComponent<RectTransform>().anchoredPosition = Vector2.zero; // 슬롯 중앙에 배치
+                    break;
+                }
+            }
+        }
+        itemsChanged = true; // 아이템이 추가되었을 때 플래그 설정
+    }
+
     public void RemoveItem(int id)
     {
         for (int i = 0; i < items.Count; i++)
@@ -89,12 +235,10 @@ public class Inventory : MonoBehaviour
             if (items[i].ID == id)
             {
                 ItemDT data = slots[i].transform.GetChild(0).GetComponent<ItemDT>();
-
-                if (data.amount > 1 && items[i].ID != 6 && items[i].ID != 7)
+                if (data.amount > 1)
                 {
                     // 스택 가능한 아이템의 경우 수량을 감소시킴
                     data.amount--;
-                    data.transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = data.amount.ToString();
                 }
                 else
                 {
@@ -103,19 +247,47 @@ public class Inventory : MonoBehaviour
                     Destroy(slots[i].transform.GetChild(0).gameObject);
                 }
 
-                if (items[i].ID == 6 && items[i].ID == 7)
-                {
-                    // 수량이 1인 경우 아이템을 제거
-                    items[i] = new Item();
-                    Destroy(slots[i].transform.GetChild(0).gameObject);
-                }
-
-
                 itemsChanged = true; // 아이템이 제거되었을 때 플래그 설정
                 break;
             }
         }
     }
+
+    public void RemoveItem(int itemID, int slotNum)
+    {
+        ItemDT data = slots[slotNum].transform.GetChild(0).GetComponent<ItemDT>();
+
+        if (data.amount > 1)
+        {
+            // 스택 가능한 아이템의 경우 수량을 감소시킴
+            data.amount--;
+        }
+        else
+        {
+            // 수량이 1인 경우 아이템을 제거
+            items[slotNum] = new Item();
+            Destroy(slots[slotNum].transform.GetChild(0).gameObject);
+        }
+
+        itemsChanged = true; // 아이템이 제거되었을 때 플래그 설정
+    }
+
+    public void RemoveItem(int itemID, int slotNum, int amount)
+    {
+        ItemDT data = slots[slotNum].transform.GetChild(0).GetComponent<ItemDT>();
+
+        data.amount -= amount;
+
+        if(data.amount <=0)
+        {
+            // 수량이 1인 경우 아이템을 제거
+            items[slotNum] = new Item();
+            Destroy(slots[slotNum].transform.GetChild(0).gameObject);
+        }
+
+        itemsChanged = true; // 아이템이 제거되었을 때 플래그 설정
+    }
+
 
     bool CheckIfItemIsInInventory(Item item)
     {
@@ -127,4 +299,65 @@ public class Inventory : MonoBehaviour
         return false;
     }
 
+
+    public void SaveInventory()
+    {
+        List<InventoryItem> inventoryItems = new List<InventoryItem>();
+        for (int i = 0; i < slots.Count; i++)
+        {
+            if (slots[i].transform.childCount > 0 && items[i].ID != -1)
+            {
+                ItemDT data = slots[i].transform.GetChild(0).GetComponent<ItemDT>();
+                inventoryItems.Add(new InventoryItem(items[i].ID, data.amount, data.slot));
+            }
+        }
+
+        string inventoryDataJson = JsonConvert.SerializeObject(inventoryItems, Formatting.Indented);
+        File.WriteAllText(Application.persistentDataPath + "/Inventory.json", inventoryDataJson);
+    }
+
+    public void LoadInventory()
+    {
+        string inventoryDataPath = Application.persistentDataPath + "/Inventory.json";
+        if (File.Exists(inventoryDataPath))
+        {
+            string inventoryDataJson = File.ReadAllText(inventoryDataPath);
+            List<InventoryItem> inventoryItems = JsonConvert.DeserializeObject<List<InventoryItem>>(inventoryDataJson);
+
+            items.Clear();
+
+            for (int i = 0; i < slotAmount; i++)
+            {
+                items.Add(new Item());
+                slots[i].GetComponent<Slot>().ClearSlot();
+            }
+            // 인벤토리 정보를 기반으로 슬롯에 아이템 배치
+            foreach (InventoryItem inventoryItem in inventoryItems)
+            {
+                Item item = itemdataBase.FetchItemByID(inventoryItem.ID);
+                items[inventoryItem.slotnum] = item;
+
+                // 슬롯에 아이템 배치
+                Slot slot = slots[inventoryItem.slotnum].GetComponent<Slot>();
+                slot.UpdateSlot(item, inventoryItem.amount);
+            }
+        }
+    }
+    void Update()
+    {
+        if(Input.GetKeyDown(KeyCode.I))
+        {
+            activeInventory = !activeInventory;
+            inventoryPanel.SetActive(activeInventory);
+
+            cameraController.SetUIActiveCount(activeInventory);
+        }
+
+        // 아이템이 변경된 경우 인벤토리를 저장
+        if (itemsChanged)
+        {
+            SaveInventory();
+            itemsChanged = false; // 플래그 초기화
+        }
+    }
 }

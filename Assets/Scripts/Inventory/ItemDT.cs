@@ -4,19 +4,21 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 
 
-public class ItemDT : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler
+public class ItemDT : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler, IPointerClickHandler
 {
     public Item item;
     public int amount;
     public int slot;
 
     private Inventory inv;
+    private Shop shop;
 
     private Vector2 offset;
 
     void Start()
     {
         inv = GameObject.Find("Inventory").GetComponent<Inventory>();
+        shop = GameObject.Find("Shop").GetComponent<Shop>();
     }
 
     public void OnBeginDrag(PointerEventData eventData)
@@ -46,4 +48,18 @@ public class ItemDT : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHa
         this.transform.position = inv.slots[slot].transform.position; // 원래의 위치로 이동  
         GetComponent<CanvasGroup>().blocksRaycasts = true;
     }
+    public void OnPointerClick(PointerEventData eventData)
+    {
+        if (eventData.button == PointerEventData.InputButton.Right)
+        {
+            if (shop.visibleShop)
+            {
+                if (!item.Stackable)
+                    inv.ShowConfirmationDialog(item, slot); // 확인 대화상자
+                else
+                    inv.ShowStackableConfirmationDialog(item, slot); // 확인 대화상자
+            }
+        }
+    }
+
 }

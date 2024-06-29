@@ -20,6 +20,8 @@ public class CameraController : MonoBehaviour
     public float finalDistance;
     public float smoothness = 10f;
 
+    private int isUIActiveCount = 0;
+
     private void Start()
     {
         rotX = transform.localRotation.eulerAngles.x;
@@ -28,18 +30,21 @@ public class CameraController : MonoBehaviour
         dirNormalized = realCamera.localPosition.normalized;
         finalDistance = realCamera.localPosition.magnitude;
 
-        //Cursor.lockState = CursorLockMode.Locked;
-        //Cursor.visible = false;
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
     }
 
     private void Update()
     {
-        rotX += -(Input.GetAxisRaw("Mouse Y")) * sensitivity * Time.deltaTime;
-        rotY += Input.GetAxisRaw("Mouse X") * sensitivity * Time.deltaTime;
+        if (isUIActiveCount < 1) // UI가 활성화된 경우 회전하지 않음
+        {
+            rotX += -(Input.GetAxisRaw("Mouse Y")) * sensitivity * Time.deltaTime;
+            rotY += Input.GetAxisRaw("Mouse X") * sensitivity * Time.deltaTime;
 
-        rotX = Mathf.Clamp(rotX, -clampAngle, clampAngle);
-        Quaternion rot = Quaternion.Euler(rotX, rotY, 0);
-        transform.rotation = rot;
+            rotX = Mathf.Clamp(rotX, -clampAngle, clampAngle);
+            Quaternion rot = Quaternion.Euler(rotX, rotY, 0);
+            transform.rotation = rot;
+        }
     }
 
     private void LateUpdate()
@@ -59,5 +64,28 @@ public class CameraController : MonoBehaviour
             finalDistance = maxDistance;
         }
         realCamera.localPosition = Vector3.Lerp(realCamera.localPosition, dirNormalized * finalDistance, Time.deltaTime * smoothness);
+    }
+
+    // UI 활성화 상태를 설정하는 메서드
+    public void SetUIActiveCount(bool active)
+    {
+        if (active)
+            isUIActiveCount++;
+        else
+            isUIActiveCount--;
+
+
+        if (isUIActiveCount > 0)  
+        {
+            // UI가 활성화되면 커서 보이기
+            Cursor.lockState = CursorLockMode.None;
+            Cursor.visible = true;
+        }
+        else
+        {
+            // UI가 비활성화되면 커서 숨기기
+            Cursor.lockState = CursorLockMode.Locked;
+            Cursor.visible = false;
+        }
     }
 }

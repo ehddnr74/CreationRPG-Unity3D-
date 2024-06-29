@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.UI;
 
 public class Slot : MonoBehaviour, IDropHandler
 {
@@ -12,7 +13,31 @@ public class Slot : MonoBehaviour, IDropHandler
 
     public GameObject inventoryItemPrefab;
 
-  
+    public void ClearSlot()
+    {
+        foreach (Transform child in transform)
+        {
+            Destroy(child.gameObject);
+        }
+    }
+
+    public void UpdateSlot(Item newItem, int amount)
+    {
+        ClearSlot();
+
+        if (newItem != null)
+        {
+            GameObject itemObj = Instantiate(inventoryItemPrefab);
+            ItemDT itemDT = itemObj.GetComponent<ItemDT>();
+            itemDT.item = newItem;
+            itemDT.amount = amount;
+            itemDT.slot = id;
+            itemDT.transform.SetParent(transform, false);
+            itemObj.GetComponent<Image>().sprite = newItem.Icon;
+            itemObj.name = newItem.Name;
+            itemObj.GetComponent<RectTransform>().anchoredPosition = Vector2.zero;
+        }
+    }
 
     void Start()
     {
@@ -21,6 +46,9 @@ public class Slot : MonoBehaviour, IDropHandler
     public void OnDrop(PointerEventData eventData)
     {
         ItemDT droppedItem = eventData.pointerDrag.GetComponent<ItemDT>();
+
+        if (droppedItem == null)
+            return;
 
         // 기존 아이템이 없는 경우
         if (inv.items[id].ID == -1)
