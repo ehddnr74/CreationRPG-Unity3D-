@@ -1,6 +1,7 @@
 using Newtonsoft.Json;
 using System.Collections;
 using System.Collections.Generic;
+using System.Net.Http.Headers;
 using UnityEngine;
 
 public class ItemDataBase : MonoBehaviour
@@ -41,12 +42,36 @@ public class ItemDataBase : MonoBehaviour
         return null;
     }
 
+    public Item FetchItemByIcon(Sprite icon)
+    {
+        for (int i = 0; i < dataBase.Count; i++)
+        {
+            if (dataBase[i].Icon == icon)
+            {
+                return dataBase[i];
+            }
+        }
+        return null;
+    }
+
+    public Item FetchItemByPrefabPath(string prefabPath)
+    {
+        for (int i = 0; i < dataBase.Count; i++)
+        {
+            if (dataBase[i].prefabPath == prefabPath)
+            {
+                return dataBase[i];
+            }
+        }
+        return null;
+    }
+
 
     void ConstructItemDataBase()
     {
         foreach (Item item in itemData.items)
         {
-            dataBase.Add(new Item(item.ID, item.Name, item.Type, item.Description, item.Price, item.SellPrice, item.IconPath, item.Stackable, item.ToolTipPath));
+            dataBase.Add(new Item(item.ID, item.Name, item.Type, item.Description, item.Price, item.SellPrice, item.IconPath, item.Stackable, item.ToolTipPath, item.prefabPath));
         }
     }
 }
@@ -66,6 +91,8 @@ public class Item
 
     public string ToolTipPath { get; set; }
 
+    public string prefabPath { get; set; }
+
 
 
     [JsonIgnore]
@@ -73,21 +100,23 @@ public class Item
     public Sprite Icon { get; set; }
     public bool Stackable { get; set; }
 
-    public Item(int id, string name, string type, string description, int price, int sellPrice, string iconPath, bool stackable, string toolTipPath)
+    public GameObject Prefab { get; set; } // 프리팹 변수 추가
+
+    public Item(int id, string name, string type, string description, int price, int sellPrice, string iconPath, bool stackable, string toolTipPath, string prefabPath)
     {
         this.ID = id;
-
-
         this.Name = name;
         this.Type = type;
         this.Description = description;
         this.Price = price;
         this.SellPrice = sellPrice;
-        this.Icon = Resources.Load<Sprite>("Items/" + iconPath);
-        this.IconPath = iconPath;
         this.Stackable = stackable;
-        this.ToolTip = Resources.Load<Sprite>("ToolTips/" + toolTipPath);
+        this.IconPath = iconPath;
+        this.Icon = Resources.Load<Sprite>("Items/" + iconPath);
         this.ToolTipPath = toolTipPath;
+        this.ToolTip = Resources.Load<Sprite>("ToolTips/" + toolTipPath);
+        this.prefabPath = prefabPath;
+        this.Prefab = Resources.Load<GameObject>("Prefabs/" + prefabPath); // 프리팹 로드
     }
 
     public Item()

@@ -27,19 +27,21 @@ public class Inventory : MonoBehaviour
 
     // 아이템 변경 플래그
     public bool itemsChanged = false;
-    
+
     public bool activeInventory = false;
 
     public GameObject confirmationDialog; // 확인 대화상자
     public Button confirmButton; // 확인 버튼
     public Button cancelButton; // 취소 버튼
     public TextMeshProUGUI confirmationText; // 확인 메시지 텍스트
+    public Image confirmationImage; // 아이템 이미지
 
 
     public GameObject stackableConfirmationDialog; // 확인 대화상자
     public Button stackableConfirmButton; // 확인 버튼
     public Button stackableCancelButton; // 취소 버튼
     public TMP_InputField CountInputField; // 판매 수량 입력 필드
+    public Image stackableConfirmationImage; // 아이템 이미지
 
     // Start is called before the first frame update
     void Start()
@@ -51,7 +53,7 @@ public class Inventory : MonoBehaviour
         inventoryPanel = GameObject.Find("Inventory Panel");
         inventoryPanel.SetActive(activeInventory);
 
-        for (int i = 0; i < slotAmount; i++) 
+        for (int i = 0; i < slotAmount; i++)
         {
             items.Add(new Item());
             slots.Add(Instantiate(inventorySlot));
@@ -74,6 +76,7 @@ public class Inventory : MonoBehaviour
     public void ShowConfirmationDialog(Item item, int slot)
     {
         DialogManager.instance.ShowDialog(confirmationDialog);
+        confirmationImage.sprite = item.Icon;
         confirmationText.text = $"'{item.Name}'을(를) 판매하시겠습니까?"; // 확인 메시지 설정
         confirmButton.onClick.RemoveAllListeners();
         confirmButton.onClick.AddListener(() => ConfirmSellItem(item, slot));
@@ -99,6 +102,7 @@ public class Inventory : MonoBehaviour
     public void ShowStackableConfirmationDialog(Item item, int slot)
     {
         DialogManager.instance.ShowDialog(stackableConfirmationDialog);
+        stackableConfirmationImage.sprite = item.Icon;
         CountInputField.text = ""; // 입력 필드 초기화
         stackableConfirmButton.onClick.RemoveAllListeners();
         stackableConfirmButton.onClick.AddListener(() => ConfirmStackableSellItem(item, slot));
@@ -185,6 +189,27 @@ public class Inventory : MonoBehaviour
                     break;
                 }
             }
+        }
+        itemsChanged = true; // 아이템이 추가되었을 때 플래그 설정
+    }
+
+    public void AddItem(int id, int slotNum, int a) // 장비 착용할 때 
+    {
+        Item itemToAdd = itemdataBase.FetchItemByID(id);
+
+        if (items[slotNum].ID == -1)
+        {
+            items[slotNum] = itemToAdd;
+            GameObject itemObj = Instantiate(inventoryItem);
+            ItemDT itemDT = itemObj.GetComponent<ItemDT>();
+            itemDT.item = itemToAdd;
+            itemDT.amount = 1; // 새로운 아이템의 개수는 1로 설정
+            itemDT.slot = slotNum; // 추가된 아이템의 슬롯 인덱스를 설정
+
+            itemDT.transform.SetParent(slots[slotNum].transform, false);
+            itemObj.GetComponent<Image>().sprite = itemToAdd.Icon;
+            itemObj.name = itemToAdd.Name;
+            itemObj.GetComponent<RectTransform>().anchoredPosition = Vector2.zero; // 슬롯 중앙에 배치            
         }
         itemsChanged = true; // 아이템이 추가되었을 때 플래그 설정
     }

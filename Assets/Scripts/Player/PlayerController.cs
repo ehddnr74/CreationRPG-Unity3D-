@@ -9,6 +9,7 @@ public class PlayerController : MonoBehaviour
     Animator mAnimator;
     Camera mCamera;
     CharacterController mController;
+    private EquipmentManager equipmentManager;
 
     public float speed = 5f;
     public float runSpeed = 8f;
@@ -21,11 +22,14 @@ public class PlayerController : MonoBehaviour
 
     public bool isAttacking;
 
+    public WeaponMount weaponMount; // WeaponMount 스크립트
+
     private void Start()
     {
         mAnimator = GetComponentInChildren<Animator>();
         mCamera = Camera.main;
-        mController = GetComponent<CharacterController>();  
+        mController = GetComponent<CharacterController>();
+        equipmentManager = GetComponent<EquipmentManager>();
     }
 
     private void Update()
@@ -77,4 +81,16 @@ public class PlayerController : MonoBehaviour
         float percent = ((run) ? 1 : 0) * moveDirection.magnitude;
         mAnimator.SetFloat("Speed", percent, 0.1f, Time.deltaTime);
     }
+
+    public void EquipWeapon(GameObject weaponPrefab, string prefabPath)
+    {
+        equipmentManager.EquipItem(weaponPrefab, "Weapon", prefabPath);
+        equipmentManager.SaveEquippedItems();
+    }
+    public void EquipShield(GameObject shieldPrefab, string prefabPath)
+    {
+        equipmentManager.EquipItem(shieldPrefab, "Shield", prefabPath);
+        equipmentManager.SaveEquippedItems();
+    }
+
 }

@@ -30,11 +30,13 @@ public class Shop : MonoBehaviour
     public Button purchaseConfirmButton; // 확인 버튼
     public Button purchaseCancelButton; // 취소 버튼
     public TextMeshProUGUI purchaseConfirmationText; // 확인 메시지 텍스트
+    public Image purchaseConfirmationImage; // 아이템 이미지
 
     public GameObject stackablePurchaseConfirmationDialog; // 확인 대화상자
     public Button stackablePurchaseConfirmButton; // 확인 버튼
     public Button stackablePurchaseCancelButton; // 취소 버튼
     public TMP_InputField CountInputField; // 판매 수량 입력 필드
+    public Image stackablePurchaseConfirmationImage; // 아이템 이미지
 
     private void Start()
     {
@@ -62,6 +64,8 @@ public class Shop : MonoBehaviour
         CreateSlotItem(0, 0);
         CreateSlotItem(1, 1);
         CreateSlotItem(2, 2);
+        CreateSlotItem(3, 3);
+        CreateSlotItem(4, 4);
 
         purchaseConfirmationDialog.SetActive(false);
         stackablePurchaseConfirmationDialog.SetActive(false);
@@ -76,6 +80,7 @@ public class Shop : MonoBehaviour
     public void ShowConfirmationDialog(Item item)
     {
         DialogManager.instance.ShowDialog(purchaseConfirmationDialog);
+        purchaseConfirmationImage.sprite = item.Icon;
         purchaseConfirmationText.text = $"'{item.Name}'을(를) 구매하시겠습니까?"; // 확인 메시지 설정
         purchaseConfirmButton.onClick.RemoveAllListeners();
         purchaseConfirmButton.onClick.AddListener(() => ConfirmBuyItem(item));
@@ -100,6 +105,7 @@ public class Shop : MonoBehaviour
     public void ShowStackableConfirmationDialog(Item item)
     {
         DialogManager.instance.ShowDialog(stackablePurchaseConfirmationDialog);
+        stackablePurchaseConfirmationImage.sprite = item.Icon;
         CountInputField.text = ""; // 입력 필드 초기화
         stackablePurchaseConfirmButton.onClick.RemoveAllListeners();
         stackablePurchaseConfirmButton.onClick.AddListener(() => ConfirmStackableBuyItem(item));
