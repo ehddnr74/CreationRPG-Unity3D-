@@ -12,6 +12,8 @@ public class Shop : MonoBehaviour
 
     ItemDataBase itemdataBase;
     private Inventory inv;
+    private QuickSlot quickSlot;
+    private PlayerData playerData;
 
     public int slotAmount;
 
@@ -40,9 +42,17 @@ public class Shop : MonoBehaviour
 
     private void Start()
     {
+        // 데이터 매니저를 통해 플레이어 데이터 로드
+        if (DataManager.instance != null)
+        {
+            DataManager.instance.LoadPlayerData();
+            playerData = DataManager.instance.playerData;
+        }
+
         cameraController = GameObject.Find("Camera").GetComponent<CameraController>();
         itemdataBase = GameObject.Find("ItemDataBase").GetComponent<ItemDataBase>();
         inv = GameObject.Find("Inventory").GetComponent<Inventory>();
+        quickSlot = GameObject.Find("QuickSlot").GetComponent<QuickSlot>();
 
         shopSlotPanel = GameObject.Find("ShopSlotPanel");
         shopPanel = GameObject.Find("ShopPanel");
@@ -88,8 +98,12 @@ public class Shop : MonoBehaviour
 
     private void ConfirmBuyItem(Item item)
     {
-        inv.AddItem(item.ID);
-        purchaseConfirmationDialog.SetActive(false);
+        if (playerData.gold - item.Price >= 0)
+        {
+            inv.AddItem(item.ID);
+            DataManager.instance.LoseGold(item.Price);
+            purchaseConfirmationDialog.SetActive(false);
+        }
     }
 
     private void OnConfirmButtonClick()
@@ -117,11 +131,25 @@ public class Shop : MonoBehaviour
 
     private void ConfirmStackableBuyItem(Item item)
     {
-        int sellAmount;
-        if (int.TryParse(CountInputField.text, out sellAmount))
+        int buyAmount;
+        if (int.TryParse(CountInputField.text, out buyAmount))
         {
-            inv.AddItem(item.ID, sellAmount);
-            stackablePurchaseConfirmationDialog.SetActive(false);
+            if (playerData.gold - (item.Price * buyAmount) >= 0)
+            {
+                inv.AddItem(item.ID, buyAmount);
+                DataManager.instance.LoseGold(item.Price * buyAmount);
+                stackablePurchaseConfirmationDialog.SetActive(false);
+
+                for (int i = 0; i < quickSlot.slotAmount; i++)
+                {
+                    QuickSlotDT qSlotDT = quickSlot.slots[i].GetComponentInChildren<QuickSlotDT>();
+                    if (qSlotDT != null && qSlotDT.iconPath == item.IconPath)
+                    {
+                        quickSlot.AddAmountQuicktSlotItem(qSlotDT.slotNum, buyAmount);
+                        break;
+                    }
+                }
+            }
         }
     }
 
@@ -138,14 +166,14 @@ public class Shop : MonoBehaviour
 
     private void CreateSlotItem(int slotIndex, int dataBaseID)
     {
-        Image itemIcon = slots[slotIndex].transform.Find("Image").transform.GetChild(0).GetComponent<Image>();
+        Image itemIcon = slots[slotIndex].transform.Find("Image").transform.GetChild(1).GetComponent<Image>();
 
-        itemIcon.GetComponent<Image>().sprite = itemdataBase.dataBase[dataBaseID].Icon;
+        itemIcon.GetComponent<Image>().sprite = itemdataBase.dataBase[dataBaseID].Icon; // 아이콘 추가
         Color tempColor = itemIcon.GetComponent<Image>().color;
         tempColor.a = 1f; // 불투명하게 설정 
         itemIcon.GetComponent<Image>().color = tempColor;
 
-        buyBtn = slots[slotIndex].transform.Find("BuyBtn").GetComponent<Button>();
+        buyBtn = slots[slotIndex].transform.Find("BuyBtn").GetComponent<Button>(); //구매 버튼 클릭 리스너 
         if(buyBtn != null)
         {
             buyBtn.onClick.AddListener(() => OnBuyButtonClicked(dataBaseID));
@@ -154,6 +182,9 @@ public class Shop : MonoBehaviour
         Color btnColor = buyBtn.GetComponent<Image>().color;
         btnColor.a = 1f; // 불투명하게 설정 
         buyBtn.GetComponent<Image>().color = btnColor;
+
+        TextMeshProUGUI priceText = slots[slotIndex].transform.GetChild(2).GetComponentInChildren<TextMeshProUGUI>(); // 해당 아이템 판매 가격 추가 
+        priceText.text = itemdataBase.dataBase[dataBaseID].Price.ToString();
     }
 
     private void OnBuyButtonClicked(int itemID)

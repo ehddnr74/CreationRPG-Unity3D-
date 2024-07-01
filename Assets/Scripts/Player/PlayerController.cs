@@ -36,10 +36,9 @@ public class PlayerController : MonoBehaviour
     {
 
         /////////////////////////////////
-        if(Input.GetKey(KeyCode.LeftAlt))
-            toggleCameraRotation = true; // 둘러보기 활성화
-        else
-            toggleCameraRotation = false; // 둘러보기 비활성화
+        if (Input.GetKeyDown(KeyCode.LeftAlt))
+            toggleCameraRotation = !toggleCameraRotation; // toggle 값 전환
+        
         /////////////////////////////////
         if (Input.GetKey(KeyCode.LeftShift))
             run = true; // 달리기 활성화

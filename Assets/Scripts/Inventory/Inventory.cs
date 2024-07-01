@@ -19,6 +19,7 @@ public class Inventory : MonoBehaviour
     public GameObject content;
 
     ItemDataBase itemdataBase;
+    private QuickSlot quickSlot;
 
     public int slotAmount;
 
@@ -48,6 +49,8 @@ public class Inventory : MonoBehaviour
     {
         cameraController = GameObject.Find("Camera").GetComponent<CameraController>();
         itemdataBase = GameObject.Find("ItemDataBase").GetComponent<ItemDataBase>();
+        quickSlot = GameObject.Find("QuickSlot").GetComponent<QuickSlot>();
+
         slotPanel = GameObject.Find("Slot Panel");
 
         inventoryPanel = GameObject.Find("Inventory Panel");
@@ -85,6 +88,7 @@ public class Inventory : MonoBehaviour
     private void ConfirmSellItem(Item item, int slot)
     {
         RemoveItem(item.ID, slot);
+        DataManager.instance.AddGold(item.SellPrice);
         confirmationDialog.SetActive(false);
     }
 
@@ -139,7 +143,18 @@ public class Inventory : MonoBehaviour
             if (sellAmount > 0 && sellAmount <= availableAmount)
             {
                 RemoveItem(item.ID, slot, sellAmount);
+                DataManager.instance.AddGold(item.SellPrice * sellAmount);
                 stackableConfirmationDialog.SetActive(false);
+
+                for (int i = 0; i < quickSlot.slotAmount; i++)
+                {
+                    QuickSlotDT qSlotDT = quickSlot.slots[i].GetComponentInChildren<QuickSlotDT>();
+                    if (qSlotDT != null && qSlotDT.iconPath == item.IconPath)
+                    {
+                        quickSlot.RemoveQuicktSlotItem(qSlotDT.iconPath, qSlotDT.slotNum, sellAmount);
+                        break;
+                    }
+                }
             }
         }
     }

@@ -1,0 +1,64 @@
+{
+  "items": [
+    {
+      "id": 0,
+      "name": "전설의 체력물약",
+      "type": "consumable",
+      "description": "흑도",
+      "price": 50,
+      "sellPrice": 35,
+      "iconPath": "hp",
+      "toolTipPath": "빨간포션",
+      "prefabPath": null,
+      "stackable": true
+    },
+    {
+      "id": 1,
+      "name": "전설의 마나물약",
+      "type": "consumable",
+      "description": "흑도",
+      "price": 50,
+      "sellPrice": 35,
+      "iconPath": "mp",
+      "toolTipPath": "빨간포션",
+      "prefabPath": null,
+      "stackable": true
+    },
+    {
+      "id": 2,
+      "name": "전설의 흑도",
+      "type": "Weapon",
+      "description": "흑도",
+      "price": 50,
+      "sellPrice": 35,
+      "iconPath": "sword",
+      "toolTipPath": "빨간포션",
+      "prefabPath": "Weapon/LegendSword",
+      "stackable": false
+    },
+    {
+      "id": 3,
+      "name": "가짜 흑도",
+      "type": "Weapon",
+      "description": "가짜 흑도",
+      "price": 50,
+      "sellPrice": 35,
+      "iconPath": "axe",
+      "toolTipPath": "빨간포션",
+      "prefabPath": "Weapon/DemonicSword",
+      "stackable": false
+    },
+    {
+      "id": 4,
+      "name": "나무 방패",
+      "type": "Shield",
+      "description": "나무 방패",
+      "price": 50,
+      "sellPrice": 35,
+      "iconPath": "shield",
+      "toolTipPath": "빨간포션",
+      "prefabPath": "Shield/WoodShield",
+      "stackable": false
+    }
+  ]
+}

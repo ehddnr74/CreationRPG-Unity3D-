@@ -1,0 +1,14 @@
+[
+  {
+    "slotName": "Weapon",
+    "itemId": 3,
+    "itemName": "가짜 흑도",
+    "prefabPath": "Weapon/DemonicSword"
+  },
+  {
+    "slotName": "Shield",
+    "itemId": 4,
+    "itemName": "나무 방패",
+    "prefabPath": "Shield/WoodShield"
+  }
+]
