@@ -199,7 +199,7 @@ public class Shop : MonoBehaviour
 
     private void Update()
     {
-        if(Input.GetKeyDown(KeyCode.Q))
+        if(Input.GetKeyDown(KeyCode.Alpha1))
         {
             visibleShop = !visibleShop;
             shopPanel.SetActive(visibleShop);

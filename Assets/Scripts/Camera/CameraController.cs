@@ -1,3 +1,4 @@
+using JetBrains.Annotations;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -22,6 +23,11 @@ public class CameraController : MonoBehaviour
 
     private int isUIActiveCount = 0;
 
+    public bool interaction;
+
+    Vector3 originPos;
+    Quaternion originRot;
+
     private void Start()
     {
         rotX = transform.localRotation.eulerAngles.x;
@@ -36,7 +42,7 @@ public class CameraController : MonoBehaviour
 
     private void Update()
     {
-        if (isUIActiveCount < 1) // UI가 활성화된 경우 회전하지 않음
+        if (isUIActiveCount < 1 && !interaction) // UI가 활성화된 경우 회전하지 않음
         {
             rotX += -(Input.GetAxisRaw("Mouse Y")) * sensitivity * Time.deltaTime;
             rotY += Input.GetAxisRaw("Mouse X") * sensitivity * Time.deltaTime;
@@ -49,21 +55,24 @@ public class CameraController : MonoBehaviour
 
     private void LateUpdate()
     {
-        transform.position = Vector3.MoveTowards(transform.position, followTarget.position, followSpeed * Time.deltaTime);
-
-        finalDir = transform.TransformPoint(dirNormalized * maxDistance);
-
-        RaycastHit hit;
-
-        if(Physics.Linecast(transform.position, finalDir, out hit))
+        if (!interaction)
         {
-            finalDistance = Mathf.Clamp(hit.distance, minDistance, maxDistance);
+            transform.position = Vector3.MoveTowards(transform.position, followTarget.position, followSpeed * Time.deltaTime);
+
+            finalDir = transform.TransformPoint(dirNormalized * maxDistance);
+
+            RaycastHit hit;
+
+            if (Physics.Linecast(transform.position, finalDir, out hit))
+            {
+                finalDistance = Mathf.Clamp(hit.distance, minDistance, maxDistance);
+            }
+            else
+            {
+                finalDistance = maxDistance;
+            }
+            realCamera.localPosition = Vector3.Lerp(realCamera.localPosition, dirNormalized * finalDistance, Time.deltaTime * smoothness);
         }
-        else
-        {
-            finalDistance = maxDistance;
-        }
-        realCamera.localPosition = Vector3.Lerp(realCamera.localPosition, dirNormalized * finalDistance, Time.deltaTime * smoothness);
     }
 
     // UI 활성화 상태를 설정하는 메서드
@@ -88,4 +97,53 @@ public class CameraController : MonoBehaviour
             Cursor.visible = false;
         }
     }
+
+    public void CameraTargetting(Transform target, float camSpeed = 0.05f)
+    {
+        if (target != null)
+        {
+            StopAllCoroutines();
+            interaction = true;
+            StartCoroutine(CameraTargettingCoroutine(target, camSpeed));
+        }
+    }
+    public void CameraReset()
+    {
+        StopAllCoroutines();
+        StartCoroutine(CameraResetCoroutine());
+    }
+
+    public void CameraOriginSetting()
+    {
+        originPos = transform.position;
+        originRot = transform.rotation;
+    }
+
+    IEnumerator CameraTargettingCoroutine(Transform target, float camSpeed = 0.15f)
+    {
+        Vector3 targetPos = target.position;
+        Vector3 targetFrontPos = targetPos + (target.forward);
+        Vector3 direction = (targetPos - targetFrontPos).normalized;
+
+        while (Vector3.Distance(transform.position, targetFrontPos) > 0.1f || Quaternion.Angle(transform.rotation, Quaternion.LookRotation(direction)) >= 0.5f)
+        {
+            transform.position = Vector3.MoveTowards(transform.position, targetFrontPos, camSpeed);
+            transform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.LookRotation(direction), camSpeed);
+            yield return null;// Raycast를 사용하여 카메라와 플레이어 사이의 충돌 감지
+        }
+    }
+    IEnumerator CameraResetCoroutine(float camSpeed = 0.08f)
+    {
+        yield return new WaitForSeconds(0.3f);
+
+        while (Vector3.Distance(transform.position, originPos) > 0.1f || Quaternion.Angle(transform.rotation, originRot) > 0.1f)
+        {
+            transform.position = Vector3.MoveTowards(transform.position, originPos, camSpeed);
+            transform.rotation = Quaternion.Lerp(transform.rotation, originRot, camSpeed);
+            yield return null;// Raycast를 사용하여 카메라와 플레이어 사이의 충돌 감지
+        }
+        interaction = false;
+    }
+
+
 }

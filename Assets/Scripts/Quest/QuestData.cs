@@ -6,11 +6,12 @@ using UnityEngine;
 public class Quest
 {
     public int id;
-    public string name;
-    public string description;
-    public string objective;
+    public int possibleLevel; // 시작 가능 레벨
+    public string name; // 퀘스트 이름 
+    public string description; // 설명 
+    public string objective; // 해야할 것  
     public Reward reward;
-    public string status; // "Not Started", "In Progress", "Completed"
+    public string status; // 시작 가능 , 진행 중 , 완료
 }
 
 [System.Serializable]

@@ -9,6 +9,7 @@ public class PlayerController : MonoBehaviour
     Animator mAnimator;
     Camera mCamera;
     CharacterController mController;
+    CameraController mCameraController;
     private EquipmentManager equipmentManager;
 
     public float speed = 5f;
@@ -29,6 +30,7 @@ public class PlayerController : MonoBehaviour
         mAnimator = GetComponentInChildren<Animator>();
         mCamera = Camera.main;
         mController = GetComponent<CharacterController>();
+        mCameraController = GameObject.Find("Camera").GetComponent<CameraController>();
         equipmentManager = GetComponent<EquipmentManager>();
     }
 
@@ -46,14 +48,14 @@ public class PlayerController : MonoBehaviour
             run = false; // 달리기 비활성화
         ////////////////////////////////////
 
-        if(!isAttacking)
+        if(!isAttacking && !mCameraController.interaction)
         InputMovement();
 
     }
 
     private void LateUpdate()
     {
-        if(!toggleCameraRotation)
+        if(!toggleCameraRotation && !mCameraController.interaction)
         {
             Vector3 playerRotate = Vector3.Scale(mCamera.transform.forward, new Vector3(1, 0, 1));
             transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(playerRotate), Time.deltaTime * smoothness);
