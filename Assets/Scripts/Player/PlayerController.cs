@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.Rendering.UI;
 
 public class PlayerController : MonoBehaviour
 {
@@ -15,6 +16,10 @@ public class PlayerController : MonoBehaviour
     public float speed = 5f;
     public float runSpeed = 8f;
     public float finalSpeed;
+    public float stepHeight = 0.3f; // 계단 높이
+    public float stepSmooth = 2f; // 계단 이동의 부드러움
+    public float gravity = -9.81f; // 중력
+    private Vector3 velocity;
 
     public bool toggleCameraRotation;
     public bool run;
@@ -36,7 +41,6 @@ public class PlayerController : MonoBehaviour
 
     private void Update()
     {
-
         /////////////////////////////////
         if (Input.GetKeyDown(KeyCode.LeftAlt))
             toggleCameraRotation = !toggleCameraRotation; // toggle 값 전환
@@ -48,8 +52,21 @@ public class PlayerController : MonoBehaviour
             run = false; // 달리기 비활성화
         ////////////////////////////////////
 
-        if(!isAttacking && !mCameraController.interaction)
-        InputMovement();
+        if (!isAttacking && !mCameraController.interaction)
+        {
+            InputMovement();
+        }
+
+        // 중력 적용
+        if (!mController.isGrounded)
+        {
+            velocity.y += gravity * Time.deltaTime;
+            mController.Move(velocity * Time.deltaTime);
+        }
+        else
+        {
+            velocity.y = 0f;
+        }
 
     }
 
@@ -60,6 +77,7 @@ public class PlayerController : MonoBehaviour
             Vector3 playerRotate = Vector3.Scale(mCamera.transform.forward, new Vector3(1, 0, 1));
             transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(playerRotate), Time.deltaTime * smoothness);
         }
+
     }
 
     private void InputMovement()
@@ -72,6 +90,8 @@ public class PlayerController : MonoBehaviour
         float horizontal = Input.GetAxisRaw("Horizontal");
         float vertical = Input.GetAxisRaw("Vertical");
 
+        finalSpeed = HandleStairs(finalSpeed);
+
         Vector3 moveDirection = (forward * vertical + right * horizontal).normalized;
 
         mController.Move(moveDirection * finalSpeed * Time.deltaTime);
@@ -81,6 +101,31 @@ public class PlayerController : MonoBehaviour
 
         float percent = ((run) ? 1 : 0) * moveDirection.magnitude;
         mAnimator.SetFloat("Speed", percent, 0.1f, Time.deltaTime);
+    }
+
+    private float HandleStairs(float finalSpeed)
+    {
+        if (mController.isGrounded)
+        {
+            RaycastHit hit;
+
+            // 캐릭터의 발 아래로 레이캐스트를 쏴서 계단을 감지
+            if (Physics.Raycast(transform.position, transform.forward, out hit, mController.radius + 0.1f))
+            {
+                if (hit.normal.y < 0.6f)
+                {
+                    // 계단 앞쪽으로 추가 레이캐스트를 쏴서 계단의 높이를 감지
+                    RaycastHit stepHit;
+                    Vector3 stepRayOrigin = transform.position + new Vector3(0, stepHeight, 0);
+                    if (Physics.Raycast(stepRayOrigin, transform.forward, out stepHit, mController.radius + 0.2f))
+                    {
+                        // 계단을 올라가기 위한 위치 조정
+                        mController.Move(Vector3.up * stepSmooth * Time.deltaTime);
+                    }
+                }
+            }
+        }
+        return finalSpeed;
     }
 
     public void EquipWeapon(GameObject weaponPrefab, string prefabPath)
