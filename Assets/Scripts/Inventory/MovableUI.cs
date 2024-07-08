@@ -16,16 +16,25 @@ public class MovableUI : MonoBehaviour, IPointerDownHandler, IDragHandler
     private Canvas _canvas;
     private RectTransform _canvasRectTransform;
 
+    public static int _globalSortingOrderCounter = 0;
+
     private void Awake()
     {
         // 이동 대상 UI를 지정하지 않은 경우, 자동으로 부모로 초기화
         if (_targetTr == null)
             _targetTr = transform.parent;
+
+        // Canvas 컴포넌트 참조
+        _canvas = _targetTr.parent.GetComponent<Canvas>();
     }
 
     // 드래그 시작 위치 지정
     void IPointerDownHandler.OnPointerDown(PointerEventData eventData)
     {
+        // 드래그 시작 시 sorting order 최상단으로 설정
+        _globalSortingOrderCounter++;
+        _canvas.sortingOrder = _globalSortingOrderCounter;
+
         _startingPoint = _targetTr.position;
         _moveBegin = eventData.position;
     }

@@ -21,7 +21,7 @@ public class CameraController : MonoBehaviour
     public float finalDistance;
     public float smoothness = 10f;
 
-    private int isUIActiveCount = 0;
+    public int isUIActiveCount = 0;
 
     public bool interaction;
 

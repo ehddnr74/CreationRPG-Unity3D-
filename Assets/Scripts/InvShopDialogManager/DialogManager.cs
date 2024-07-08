@@ -28,6 +28,11 @@ public class DialogManager : MonoBehaviour
             dialog.SetActive(false);
         }
         dialogToShow.SetActive(true);
+        Canvas canvas = dialogToShow.transform.parent.GetComponent<Canvas>();
+
+        // _globalSortingOrderCounter를 static으로 접근
+        MovableUI._globalSortingOrderCounter++;
+        canvas.sortingOrder = MovableUI._globalSortingOrderCounter;
     }
 
     public void HideAllDialogs()

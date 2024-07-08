@@ -7,7 +7,7 @@ using UnityEngine.Rendering.UI;
 
 public class PlayerController : MonoBehaviour
 {
-    Animator mAnimator;
+    public Animator mAnimator;
     Camera mCamera;
     CharacterController mController;
     CameraController mCameraController;
@@ -23,12 +23,9 @@ public class PlayerController : MonoBehaviour
 
     public bool toggleCameraRotation;
     public bool run;
-
-    public float smoothness = 10f;
-
     public bool isAttacking;
 
-    public WeaponMount weaponMount; // WeaponMount 스크립트
+    public float smoothness = 10f;
 
     private void Start()
     {
@@ -52,7 +49,7 @@ public class PlayerController : MonoBehaviour
             run = false; // 달리기 비활성화
         ////////////////////////////////////
 
-        if (!isAttacking && !mCameraController.interaction)
+        if (!mCameraController.interaction && !isAttacking)
         {
             InputMovement();
         }
@@ -72,7 +69,7 @@ public class PlayerController : MonoBehaviour
 
     private void LateUpdate()
     {
-        if(!toggleCameraRotation && !mCameraController.interaction)
+        if (!toggleCameraRotation && !mCameraController.interaction)
         {
             Vector3 playerRotate = Vector3.Scale(mCamera.transform.forward, new Vector3(1, 0, 1));
             transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(playerRotate), Time.deltaTime * smoothness);

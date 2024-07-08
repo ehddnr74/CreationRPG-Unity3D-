@@ -86,15 +86,18 @@ public class DialogueManager : MonoBehaviour
 
     public void ShowDialogue(Dialogue[] mdialogues, bool quest)
     {
-        questDialog = quest;
-        isDialogue = true;
-        dialogueText.text = "";
-        dialogueNameText.text = "";
-        dialogues = mdialogues;
-        SettingUI(true);
-        cameraController.CameraOriginSetting();
-        cameraController.CameraTargetting(dialogues[lineCount].target);
-        StartCoroutine(TypeWriter());
+        if (cameraController.isUIActiveCount <= 0)
+        {
+            questDialog = quest;
+            isDialogue = true;
+            dialogueText.text = "";
+            dialogueNameText.text = "";
+            dialogues = mdialogues;
+            SettingUI(true);
+            cameraController.CameraOriginSetting();
+            cameraController.CameraTargetting(dialogues[lineCount].target);
+            StartCoroutine(TypeWriter());
+        }
     }
 
     void EndDialogue()
