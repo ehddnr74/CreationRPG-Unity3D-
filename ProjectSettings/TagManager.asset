@@ -7,11 +7,16 @@ TagManager:
   - QuickSlot
   - KeyCodeUI
   - Stairs
+  - WayPoints
+  - SoulEater
+  - Monster
+  - Weapon
+  - mSoulEater
   layers:
   - Default
   - TransparentFX
   - Ignore Raycast
-  - 
+  - Ground
   - Water
   - UI
   - Stairs

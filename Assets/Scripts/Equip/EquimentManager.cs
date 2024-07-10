@@ -31,11 +31,13 @@ public class EquipmentManager : MonoBehaviour
     public List<EquipmentSlot> equipmentSlots;
 
     private ItemDataBase itemDataBase;
+    private PlayerController playercontroller;
     private Equip equip;
 
     private void Start()
     {
         itemDataBase = GameObject.Find("ItemDataBase").GetComponent<ItemDataBase>();
+        playercontroller = GameObject.Find("Player").GetComponent<PlayerController>();
         equip = GameObject.Find("Equip").GetComponent<Equip>();
         LoadEquippedItems();
     }
@@ -58,6 +60,10 @@ public class EquipmentManager : MonoBehaviour
                 newItem.transform.localRotation = Quaternion.Euler(slot.rotationOffset);
                 slot.currentItem = newItem;
                 slot.currentItempath = prefabPath;
+                if(slotName == "Weapon")
+                {
+                    playercontroller.currentWeapon = slot.currentItem;
+                }
             }
             else
             {

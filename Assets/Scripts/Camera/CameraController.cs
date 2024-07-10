@@ -65,7 +65,10 @@ public class CameraController : MonoBehaviour
 
             if (Physics.Linecast(transform.position, finalDir, out hit))
             {
-                finalDistance = Mathf.Clamp(hit.distance, minDistance, maxDistance);
+                if (hit.collider.tag != "SoulEater")
+                {
+                    finalDistance = Mathf.Clamp(hit.distance, minDistance, maxDistance);
+                }
             }
             else
             {

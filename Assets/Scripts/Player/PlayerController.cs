@@ -27,6 +27,8 @@ public class PlayerController : MonoBehaviour
 
     public float smoothness = 10f;
 
+    public GameObject currentWeapon;
+
     private void Start()
     {
         mAnimator = GetComponentInChildren<Animator>();
@@ -123,6 +125,14 @@ public class PlayerController : MonoBehaviour
             }
         }
         return finalSpeed;
+    }
+    private void OnTriggerEnter(Collider other)
+    {
+        if (other.CompareTag("SoulEater"))
+        {
+            Debug.Log("Player hit by Monster!");
+            // 플레이어에게 데미지 입히기 등
+        }
     }
 
     public void EquipWeapon(GameObject weaponPrefab, string prefabPath)

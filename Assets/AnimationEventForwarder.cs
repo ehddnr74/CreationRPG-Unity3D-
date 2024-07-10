@@ -57,15 +57,20 @@ public class AnimationEventForwarder : MonoBehaviour
         }
         else if (comboStep == 2)
         {
-            if (Random.value > 0.5f)
+            int randomAttack = Random.Range(0, 3);
+            if (randomAttack == 0)
             {
                 mAnimator.SetTrigger("FinishAttack1");
             }
-            else
+            else if (randomAttack == 1)
             {
                 mAnimator.SetTrigger("FinishAttack2");
             }
-            comboStep = 0; 
+            else if (randomAttack == 2)
+            {
+                mAnimator.SetTrigger("FinishAttack3");
+            }
+            comboStep = 0;
         }
     }
 
@@ -77,6 +82,7 @@ public class AnimationEventForwarder : MonoBehaviour
         mAnimator.ResetTrigger("Attack2");
         mAnimator.ResetTrigger("FinishAttack1");
         mAnimator.ResetTrigger("FinishAttack2");
+        mAnimator.ResetTrigger("FinishAttack3");
         canAttack = true;
         parentController.isAttacking = false;
     }
@@ -86,4 +92,29 @@ public class AnimationEventForwarder : MonoBehaviour
         canAttack = true; // 현재 공격이 끝나면 다시 공격 가능하도록 설정
     }
 
+    public void EnableWeaponCollider()
+    {
+        if (parentController.currentWeapon != null)
+        {
+            parentController.currentWeapon.GetComponent<Collider>().enabled = true;
+        }
+    }
+
+    public void DisableWeaponCollider()
+    {
+        if (parentController.currentWeapon != null)
+        {
+            parentController.currentWeapon.GetComponent<Collider>().enabled = false;
+        }
+    }
+
+    public void EnableWeaponTrail()
+    {
+        parentController.currentWeapon.GetComponentInChildren<TrailRenderer>().enabled = true;
+    }
+
+    public void DisableWeaponTrail()
+    {
+        parentController.currentWeapon.GetComponentInChildren<TrailRenderer>().enabled = false;
+    }
 }
