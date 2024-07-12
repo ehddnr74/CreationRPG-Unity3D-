@@ -61,6 +61,10 @@ public class ItemDT : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHa
         {
             if (result.gameObject.CompareTag("QuickSlot"))
             {
+                if(item.Type == "Weapon")
+                {
+                    break;
+                }
                 QuickSlotDT quickSlot = result.gameObject.GetComponent<QuickSlotDT>();
                 if (quickSlot != null)
                 {

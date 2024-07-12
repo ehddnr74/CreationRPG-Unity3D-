@@ -53,12 +53,9 @@ TrailRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: c4a9898349834844e8f70246d5e33538, type: 2}
-  - {fileID: 2100000, guid: 9a2e5fcb985bf2e4d9a5c45621ec2bd4, type: 2}
   - {fileID: 2100000, guid: c1eb2c55c7a0007498dedba8627fc122, type: 2}
-  - {fileID: 2100000, guid: 0d1c0ab63d065cd459058bc7c0c50ba5, type: 2}
-  - {fileID: 2100000, guid: 17f7d5076bc13bf4d95ab396ce010486, type: 2}
-  - {fileID: 2100000, guid: f0b8fb3ecbc2cb048825486e3d63f1ba, type: 2}
+  - {fileID: 2100000, guid: 0d20bbb949108214db3d7d56e0fa77d3, type: 2}
+  - {fileID: 2100000, guid: 28b125ea515132044b10f9ce4856c123, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -78,7 +75,7 @@ TrailRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 0
+  m_SortingOrder: 1
   m_Time: 0.1
   m_PreviewTimeScale: 1
   m_Parameters:
@@ -279,6 +276,10 @@ PrefabInstance:
         type: 3}
       insertIndex: -1
       addedObject: {fileID: -454606577432100851}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: b614443038ba99640be88e740d27ec25,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 8027614457144705376}
   m_SourcePrefab: {fileID: 100100000, guid: b614443038ba99640be88e740d27ec25, type: 3}
 --- !u!4 &1238546191780828102 stripped
 Transform:
@@ -352,3 +353,15 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
+--- !u!114 &8027614457144705376
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1908369141806532988}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0904856073a756c4da884c7a9d221554, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 

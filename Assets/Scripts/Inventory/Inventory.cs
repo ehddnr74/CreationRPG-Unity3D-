@@ -385,14 +385,6 @@ public class Inventory : MonoBehaviour
     }
     void Update()
     {
-        if(Input.GetKeyDown(KeyCode.I))
-        {
-            activeInventory = !activeInventory;
-            inventoryPanel.SetActive(activeInventory);
-
-            cameraController.SetUIActiveCount(activeInventory);
-        }
-
         // 아이템이 변경된 경우 인벤토리를 저장
         if (itemsChanged)
         {

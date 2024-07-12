@@ -1,9 +1,9 @@
 [
   {
     "slotName": "Weapon",
-    "itemId": 3,
-    "itemName": "가짜 흑도",
-    "prefabPath": "Weapon/DemonicSword"
+    "itemId": 2,
+    "itemName": "전설의 흑도",
+    "prefabPath": "Weapon/LegendSword"
   },
   {
     "slotName": "Shield",

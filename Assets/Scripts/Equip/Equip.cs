@@ -24,15 +24,4 @@ public class Equip : MonoBehaviour
         cameraController = GameObject.Find("Camera").GetComponent<CameraController>();
         equipPanel.SetActive(visibleEquip);
     }
-    private void Update()
-    {
-        if(Input.GetKeyUp(KeyCode.E))
-        {
-            visibleEquip = !visibleEquip;
-            equipPanel.SetActive(visibleEquip);
-
-            cameraController.SetUIActiveCount(visibleEquip);
-        }
-    }
-
 }

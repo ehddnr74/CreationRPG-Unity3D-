@@ -49,3 +49,6 @@ TagManager:
   - name: Default
     uniqueID: 0
     locked: 0
+  - name: TrailRendererLayer
+    uniqueID: 3350436843
+    locked: 0

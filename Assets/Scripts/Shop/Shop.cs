@@ -73,9 +73,11 @@ public class Shop : MonoBehaviour
         // 추가하고자 할 slotIndex와 dataBase에 저장되있는 아이템의 ID를 넣어주면 상점 판매목록 갱신 가능
         CreateSlotItem(0, 0);
         CreateSlotItem(1, 1);
-        CreateSlotItem(2, 2);
         CreateSlotItem(3, 3);
         CreateSlotItem(4, 4);
+        CreateSlotItem(6, 2);
+        CreateSlotItem(7, 5);
+        CreateSlotItem(8, 6);
 
         purchaseConfirmationDialog.SetActive(false);
         stackablePurchaseConfirmationDialog.SetActive(false);
@@ -92,6 +94,22 @@ public class Shop : MonoBehaviour
         DialogManager.instance.ShowDialog(purchaseConfirmationDialog);
         purchaseConfirmationImage.sprite = item.Icon;
         purchaseConfirmationText.text = $"'{item.Name}'을(를) 구매하시겠습니까?"; // 확인 메시지 설정
+        if(item.ID == 5)
+        {
+            purchaseConfirmationText.text = $"<color=red>'{item.Name}'</color>을(를) 구매하시겠습니까?";
+        }
+        else if(item.ID == 2)
+        {
+            purchaseConfirmationText.text = $"<color=#00FFFF>'{item.Name}'</color>을(를) 구매하시겠습니까?";
+        }
+        else if(item.ID == 6)
+        {
+            purchaseConfirmationText.text = $"<color=yellow>'{item.Name}'</color>을(를) 구매하시겠습니까?";
+        }
+        else
+        {
+            purchaseConfirmationText.text = $"<color=white>'{item.Name}'</color>을(를) 구매하시겠습니까?";
+        }
         purchaseConfirmButton.onClick.RemoveAllListeners();
         purchaseConfirmButton.onClick.AddListener(() => ConfirmBuyItem(item));
     }

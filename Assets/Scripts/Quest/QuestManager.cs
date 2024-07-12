@@ -67,17 +67,9 @@ public class QuestManager : MonoBehaviour
 
     private void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Q))
+        if (!visibleQuest)
         {
-            visibleQuest = !visibleQuest;
-            questPanel.SetActive(visibleQuest);
-
-            cameraController.SetUIActiveCount(visibleQuest);
-
-            if(!visibleQuest)
-            {
-                HideQuestInfo();
-            }
+            HideQuestInfo();
         }
     }
 

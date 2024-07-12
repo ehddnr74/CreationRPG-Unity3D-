@@ -1,0 +1,67 @@
+{
+  "quests": [
+    {
+      "id": 0,
+      "possibleLevel": 1,
+      "name": "말 걸기!",
+      "description": "누구누구에게 말을 거시오",
+      "objective": "말 걸깅",
+      "reward": {
+        "experience": 100,
+        "items": [
+          {
+            "itemId": 0,
+            "amount": 1
+          }
+        ]
+      },
+      "status": "진행 중"
+    },
+    {
+      "id": 1,
+      "possibleLevel": 2,
+      "name": "드래곤 사냥",
+      "description": "드래곤을 잡아주세연",
+      "objective": "드래곤 사냥",
+      "reward": {
+        "experience": 500,
+        "items": [
+          {
+            "itemId": 1,
+            "amount": 1
+          }
+        ]
+      },
+      "status": "진행 중"
+    },
+    {
+      "id": 2,
+      "possibleLevel": 3,
+      "name": "유령무희",
+      "description": "유령무희인가?",
+      "objective": "유령무희다.",
+      "reward": {
+        "experience": 500,
+        "items": [
+          {
+            "itemId": 0,
+            "amount": 1
+          },
+          {
+            "itemId": 1,
+            "amount": 1
+          },
+          {
+            "itemId": 2,
+            "amount": 1
+          },
+          {
+            "itemId": 3,
+            "amount": 1
+          }
+        ]
+      },
+      "status": "시작 가능"
+    }
+  ]
+}
