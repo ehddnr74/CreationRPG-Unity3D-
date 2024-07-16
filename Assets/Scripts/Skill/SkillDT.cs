@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
-public class SkillDT : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler
+public class SkillDT : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler, IPointerEnterHandler, IPointerExitHandler
 {
     private Vector2 offset;
     private Transform originalParent;
@@ -11,22 +11,34 @@ public class SkillDT : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragH
     private Canvas canvas;
 
     private QuickSlot qSlot;
-   
 
-    public Sprite skillIcon;
+    private SkillToolTip skillTooltip;
+
+    public GameObject skillNameText;
+    public GameObject skillLvText;
+    public GameObject skillLevelText;
+    public GameObject skillUpBtn;
+
+    public GameObject nonDragableskillIcon;
+
     public string skillName;
+    public string skillType;
+    public int skillMasterLevel;
+    public int skillMinLevel;
     public int skillLevel;
+    public Sprite skillIcon;
 
     void Start()
     {
         qSlot = GameObject.Find("QuickSlot").GetComponent<QuickSlot>();
+        skillTooltip = GameObject.Find("SkillUI").GetComponent<SkillToolTip>();
         canvasGroup = GetComponent<CanvasGroup>();
         canvas = GetComponentInParent<Canvas>();
     }
 
     public void OnBeginDrag(PointerEventData eventData)
     {
-        if (skillLevel > 0)
+        if (skillLevel > 0 && skillType != "패시브")
         {
             offset = eventData.position - new Vector2(this.transform.position.x, this.transform.position.y);
             originalParent = this.transform.parent;
@@ -39,7 +51,7 @@ public class SkillDT : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragH
 
     public void OnDrag(PointerEventData eventData)
     {
-        if (skillLevel > 0)
+        if (skillLevel > 0 && skillType != "패시브")
         {
             this.transform.position = eventData.position - offset;
         }
@@ -47,7 +59,7 @@ public class SkillDT : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragH
 
     public void OnEndDrag(PointerEventData eventData)
     {
-        if (skillLevel > 0)
+        if (skillLevel > 0 && skillType != "패시브")
         {
             // Raycast를 사용하여 포인터가 어떤 UI 요소 위에 있는지 확인
             List<RaycastResult> results = new List<RaycastResult>();
@@ -71,5 +83,14 @@ public class SkillDT : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragH
             this.transform.position = originalParent.position;
             canvasGroup.blocksRaycasts = true;
         }
+    }
+    public void OnPointerEnter(PointerEventData eventData)
+    {
+        skillTooltip.Activate(skillName, skillMinLevel, skillMasterLevel, skillLevel);
+    }
+
+    public void OnPointerExit(PointerEventData eventData)
+    {
+        skillTooltip.Deactivate();
     }
 }

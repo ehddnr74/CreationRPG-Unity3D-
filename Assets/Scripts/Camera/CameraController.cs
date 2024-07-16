@@ -24,6 +24,7 @@ public class CameraController : MonoBehaviour
     public int isUIActiveCount = 0;
 
     public bool interaction;
+    public bool pressTab = false;
 
     Vector3 originPos;
     Quaternion originRot;
@@ -42,7 +43,23 @@ public class CameraController : MonoBehaviour
 
     private void Update()
     {
-        if (isUIActiveCount < 1 && !interaction) // UI가 활성화된 경우 회전하지 않음
+        if(Input.GetKeyDown(KeyCode.Tab) && isUIActiveCount < 1)
+        {
+            pressTab = !pressTab;
+
+            if (pressTab)
+            {
+                Cursor.lockState = CursorLockMode.None;
+                Cursor.visible = true;
+            }
+            else
+            {
+                Cursor.lockState = CursorLockMode.Locked;
+                Cursor.visible = false;
+            }
+        }
+
+        if (isUIActiveCount < 1 && !interaction && !pressTab) // UI가 활성화된 경우 회전하지 않음
         {
             rotX += -(Input.GetAxisRaw("Mouse Y")) * sensitivity * Time.deltaTime;
             rotY += Input.GetAxisRaw("Mouse X") * sensitivity * Time.deltaTime;
@@ -84,7 +101,13 @@ public class CameraController : MonoBehaviour
         if (active)
             isUIActiveCount++;
         else
+        {
             isUIActiveCount--;
+            if(isUIActiveCount == 0)
+            {
+                pressTab = false;
+            }
+        }
 
 
         if (isUIActiveCount > 0)  

@@ -5,51 +5,40 @@ using UnityEngine;
 
 public class PlayerManager : MonoBehaviour
 {
-    public PlayerData playerData;
     public TextMeshProUGUI nameText;
     public TextMeshProUGUI levelText;
     public TextMeshProUGUI InventorygGoldText;
     public TextMeshProUGUI shopGoldText;
 
+    private Shop shop;
+
     private void Start()
     {
-        // 데이터 매니저를 통해 플레이어 데이터 로드
-        if (DataManager.instance != null)
-        {
-            DataManager.instance.LoadPlayerData();
-            playerData = DataManager.instance.playerData;
-            UpdateUI();
-        }
+        shop = GameObject.Find("Shop").GetComponent<Shop>();
+        UpdateUI();
     }
 
     private void UpdateUI() // StatusBar 업데이트
     {
-        if (nameText != null && playerData != null)
-            nameText.text = playerData.name;
+        if (nameText != null && DataManager.instance.playerData != null)
+            nameText.text = DataManager.instance.playerData.name;
 
-        if (levelText != null && playerData != null)
-            levelText.text = playerData.level.ToString();
+        if (levelText != null && DataManager.instance.playerData != null)
+            levelText.text = DataManager.instance.playerData.level.ToString();
 
-        if (InventorygGoldText != null && playerData != null)
-            InventorygGoldText.text = playerData.gold.ToString();
+        if (InventorygGoldText != null && DataManager.instance.playerData != null)
+            InventorygGoldText.text = DataManager.instance.playerData.gold.ToString();
 
-        if (shopGoldText != null && playerData != null)
-            shopGoldText.text = playerData.gold.ToString();
+        if (shopGoldText != null && DataManager.instance.playerData != null)
+            shopGoldText.text = DataManager.instance.playerData.gold.ToString();
     }
 
-    public void UpdateInventoryGoldText(PlayerData pd)// 플레이어 골드에 따른 Inventory GoldTextUI 갱신 
+    public void UpdateGoldText()// 플레이어 골드에 따른 Inventory / Shop GoldTextUI 갱신 
     {
-        playerData = pd;
-
         if (InventorygGoldText != null)
-            InventorygGoldText.text = playerData.gold.ToString();
-    }
+            InventorygGoldText.text = DataManager.instance.playerData.gold.ToString();
 
-    public void UpdateShopGoldText(PlayerData pd) // 플레이어 골드에 따른 Shop GoldTextUI 갱신 
-    {
-        playerData = pd;
-
-        if (shopGoldText != null)
-            shopGoldText.text = pd.gold.ToString();
+        if (shopGoldText != null && shop.visibleShop)
+            shopGoldText.text = DataManager.instance.playerData.gold.ToString();
     }
 }

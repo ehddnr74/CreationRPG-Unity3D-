@@ -6,38 +6,31 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
+
+/// <summary>
+/// Json에 추가한대로 스킬 동적으로 생성되도록 구현 (slotAmount는 인스펙터에서 변경 가능(동적 생성))
+/// </summary>
 public class SkillManager : MonoBehaviour
 {
     public static SkillManager instance;
+
+    public int slotAmount;
+    public GameObject skillSlot;
+    public GameObject content;
 
     private string path;
     private string skillDataFilename = "Skill";  // 스킬 데이터 파일명
     public SkillCollection skillCollection;
 
     public TextMeshProUGUI skillPointText;
-    public TextMeshProUGUI lightningStrikeText;
-    public TextMeshProUGUI lightningStrikeLevel;
-    public TextMeshProUGUI atrocitiesText;
-    public TextMeshProUGUI atrocitiesLevel;
-    public TextMeshProUGUI naturalDisasterText;
-    public TextMeshProUGUI naturalDisasterLevel;
-
-    public Button lightningStrikeBtn;
-    public Button atrocitiesBtn;
-    public Button naturalDisasterBtn;
-
-    public GameObject lightningStrikeIcon;
-    public GameObject atrocitiesIcon;
-    public GameObject naturalDisasterIcon;
-
-    SkillDT lightningStrikeSkillDT;
-    SkillDT atrocitiesSkillDT;
-    SkillDT naturalDisasterSkillDT;
 
     public GameObject skillPanel;
 
     public bool visibleSkill = false;
     public bool itemChanged = false;
+
+    private Dictionary<string, (TextMeshProUGUI NameText, TextMeshProUGUI levelText, SkillDT skillDT, Button skillButton)> skillUIElements = new Dictionary<string, (TextMeshProUGUI,TextMeshProUGUI, SkillDT, Button)>();
+    public List<GameObject> slots = new List<GameObject>();
 
     private void Awake()
     {
@@ -57,9 +50,9 @@ public class SkillManager : MonoBehaviour
     {
         path = Application.persistentDataPath + "/";
 
+        CreateSlot(); 
         skillCollection = LoadSkillData();
-        AddListener(); // 스킬 레벨 업 버튼 리스너 추가 
-        LoadSkillDT();
+        AddSkill();
         UpdateSkillUI();
         SaveSkillData(skillCollection);
 
@@ -82,34 +75,69 @@ public class SkillManager : MonoBehaviour
         }
     }
 
-    private void AddListener()
+    private void CreateSlot()
     {
-        lightningStrikeBtn.onClick.AddListener(OnLightningStrikeButtonClick);
-        atrocitiesBtn.onClick.AddListener(OnAtrocitiesButtonClick);
-        naturalDisasterBtn.onClick.AddListener(onNaturalDisasterButtonClick);
+        for(int i=0;i<slotAmount;i++)
+        {
+            slots.Add(Instantiate(skillSlot));
+            slots[i].transform.SetParent(content.transform, false);
+        }
     }
-    private void LoadSkillDT()
+    private void AddSkill()
     {
-        lightningStrikeSkillDT = lightningStrikeIcon.GetComponent<SkillDT>();
-        atrocitiesSkillDT = atrocitiesIcon.GetComponent<SkillDT>();
-        naturalDisasterSkillDT = naturalDisasterIcon.GetComponent<SkillDT>();
+        //////////////////// Json 스킬 수 만큼 slot에 스킬 생성하는 과정 
+        int index = 0;
+        foreach (var skill in skillCollection.skills)
+        {
+            if (index >= slots.Count) break; // 슬롯보다 스킬이 많은 경우 종료
+
+            SkillDT skillData = slots[index].GetComponentInChildren<SkillDT>(); 
+            if(skillData != null)
+            {
+                //////////////////// SkillData에 Icon,Name,Level 업데이트를 위해 저장 
+                Sprite Icon = Resources.Load<Sprite>("Items/" + skill.Value.iconPath);
+                skillData.skillName = skill.Value.skillName;
+                skillData.skillType = skill.Value.skillType;
+                skillData.skillMinLevel = skill.Value.minLevel;
+                skillData.skillMasterLevel = skill.Value.maxLevel;
+                skillData.skillLevel = skill.Value.skillLevel;
+                skillData.skillIcon = Icon;
+                ////////////////////
+
+                //////////////////// 스킬의 진짜 이미지 씌우기
+                Image nonDragableSkillImg = skillData.nonDragableskillIcon.GetComponent<Image>();
+                nonDragableSkillImg.sprite = Icon;
+
+                Color tempColor = nonDragableSkillImg.color;
+                tempColor.a = 1f;
+                nonDragableSkillImg.color = tempColor;
+
+                Image skillImg = skillData.gameObject.GetComponent<Image>();
+                skillImg.sprite = Icon;
+                ////////////////////
+   
+                ///////////////////// 스킬 요소에 Name,Lv.,Level,UpBtn 담아두기 
+                TextMeshProUGUI skillNameText = skillData.skillNameText.GetComponent<TextMeshProUGUI>();
+                TextMeshProUGUI skillLvText = skillData.skillLvText.GetComponent<TextMeshProUGUI>();
+                skillLvText.text = "Lv.";
+                TextMeshProUGUI skillLevelText = skillData.skillLevelText.GetComponent<TextMeshProUGUI>();
+                skillLevelText.text = skill.Value.skillLevel.ToString();
+                Button skillUpBtn = skillData.skillUpBtn.GetComponent<Button>();
+                /////////////////////
+                
+                ///////////////////// 스킬 요소 추가 후 버튼 리스너 추가
+                skillUIElements.Add(skill.Value.skillName, (skillNameText,skillLevelText, skillData, skillUpBtn));
+                skillUpBtn.onClick.AddListener(() => OnSkillButtonClick(skill.Key));
+                /////////////////////
+            }
+            index++;
+        }
     }
-    private void OnLightningStrikeButtonClick()
+
+    private void OnSkillButtonClick(string skillName)
     {
         skillCollection.skillPoint--;
-        skillCollection.skills[0].skillLevel++;
-        itemChanged = true;
-    }
-    private void OnAtrocitiesButtonClick()
-    {
-        skillCollection.skillPoint--;
-        skillCollection.skills[1].skillLevel++;
-        itemChanged = true;
-    }
-    private void onNaturalDisasterButtonClick()
-    {
-        skillCollection.skillPoint--;
-        skillCollection.skills[2].skillLevel++;
+        skillCollection.skills[skillName].skillLevel++;
         itemChanged = true;
     }
 
@@ -117,11 +145,12 @@ public class SkillManager : MonoBehaviour
     {
         UpdateSkillPointText();
 
-        if (skillCollection.skills.Count > 0)
+        foreach (var skill in skillCollection.skills)
         {
-            UpdateSkillUIElement(skillCollection.skills[0], lightningStrikeLevel, lightningStrikeSkillDT);
-            UpdateSkillUIElement(skillCollection.skills[1], atrocitiesLevel, atrocitiesSkillDT);
-            UpdateSkillUIElement(skillCollection.skills[2], naturalDisasterLevel, naturalDisasterSkillDT);
+            if (skillUIElements.TryGetValue(skill.Key, out var uiElements))
+            {
+                UpdateSkillUIElement(skill.Value, uiElements.NameText, uiElements.levelText, uiElements.skillDT);
+            }
         }
 
         UpdateButtonVisibility();
@@ -133,13 +162,17 @@ public class SkillManager : MonoBehaviour
             skillPointText.text = skillCollection.skillPoint.ToString();
         }
     }
-    private void UpdateSkillUIElement(SkillData skill, TextMeshProUGUI skillLevelText, SkillDT skillDT)
+    private void UpdateSkillUIElement(SkillData skill, TextMeshProUGUI skillNameText, TextMeshProUGUI skillLevelText, SkillDT skillDT)
     {
+        if (skillNameText != null)
+        {
+            skillNameText.text = skill.skillName;
+        }
         if (skillLevelText != null)
         {
             skillLevelText.text = skill.skillLevel.ToString();
         }
-        if (skill.skillLevel > 0 && skillDT != null)
+        if (skill.skillLevel > skill.minLevel && skillDT != null)
         {
             skillDT.skillLevel = skill.skillLevel;
         }
@@ -148,17 +181,20 @@ public class SkillManager : MonoBehaviour
     {
         if (skillCollection.skillPoint <= 0)
         {
-            // 스킬 포인트가 0이면 버튼 비활성화
-            SetButtonVisibility(lightningStrikeBtn, false);
-            SetButtonVisibility(atrocitiesBtn, false);
-            SetButtonVisibility(naturalDisasterBtn, false);
+            foreach (var uiElements in skillUIElements.Values)
+            {
+                SetButtonVisibility(uiElements.skillButton, false);
+            }
         }
         else
         {
-            // 스킬 포인트가 있으면 각 스킬 레벨에 따라 버튼 가시성 조정
-            SetButtonVisibility(lightningStrikeBtn, skillCollection.skills[0].skillLevel < 5);
-            SetButtonVisibility(atrocitiesBtn, skillCollection.skills[1].skillLevel < 5);
-            SetButtonVisibility(naturalDisasterBtn, skillCollection.skills[2].skillLevel < 5);
+            foreach (var skill in skillCollection.skills)
+            {
+                if (skillUIElements.TryGetValue(skill.Key, out var uiElements))
+                {
+                    SetButtonVisibility(uiElements.skillButton, skill.Value.skillLevel < skill.Value.maxLevel);
+                }
+            }
         }
     }
     private void SetButtonVisibility(Button button, bool isVisible)
@@ -191,6 +227,14 @@ public class SkillManager : MonoBehaviour
         {
             return new SkillCollection(); // 데이터가 없으면 빈 SkillCollection 반환
         }
+    }
+    public SkillData GetSkillDataByName(string skillName)
+    {
+        if (skillCollection.skills.ContainsKey(skillName))
+        {
+            return skillCollection.skills[skillName];
+        }
+        return null;
     }
 
 }

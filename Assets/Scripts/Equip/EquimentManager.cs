@@ -23,20 +23,17 @@ public class EquipmentManager : MonoBehaviour
     {
         public string slotName;
         public Transform mountPoint;
-        public Vector3 rotationOffset;
         public GameObject currentItem;
         public string currentItempath;
     }
 
     public List<EquipmentSlot> equipmentSlots;
 
-    private ItemDataBase itemDataBase;
     private PlayerController playercontroller;
     private Equip equip;
 
     private void Start()
     {
-        itemDataBase = GameObject.Find("ItemDataBase").GetComponent<ItemDataBase>();
         playercontroller = GameObject.Find("Player").GetComponent<PlayerController>();
         equip = GameObject.Find("Equip").GetComponent<Equip>();
         LoadEquippedItems();
@@ -56,13 +53,17 @@ public class EquipmentManager : MonoBehaviour
             if (itemPrefab != null)
             {
                 GameObject newItem = Instantiate(itemPrefab, slot.mountPoint);
-                newItem.transform.localPosition = Vector3.zero;
-                newItem.transform.localRotation = Quaternion.Euler(slot.rotationOffset);
+                newItem.transform.localPosition = itemPrefab.transform.localPosition;
+                newItem.transform.localRotation = itemPrefab.transform.localRotation;//Quaternion.Euler(slot.rotationOffset);
                 slot.currentItem = newItem;
                 slot.currentItempath = prefabPath;
                 if(slotName == "Weapon")
                 {
                     playercontroller.currentWeapon = slot.currentItem;
+                }
+                else if(slotName == "Shield")
+                {
+                    playercontroller.currentShield = slot.currentItem;
                 }
             }
             else
@@ -80,7 +81,7 @@ public class EquipmentManager : MonoBehaviour
         {
             if (slot.currentItem != null && slot.currentItempath != null)
             {
-                Item item = itemDataBase.FetchItemByPrefabPath(slot.currentItempath);
+                Item item = ItemDataBase.instance.FetchItemByPrefabPath(slot.currentItempath);
 
                 EquippedItem equippedItem = new EquippedItem
                 {
@@ -111,7 +112,7 @@ public class EquipmentManager : MonoBehaviour
                 GameObject itemPrefab = Resources.Load<GameObject>("Prefabs/" + equippedItem.prefabPath);
                 EquipItem(itemPrefab, equippedItem.slotName, equippedItem.prefabPath);
 
-                Item item = itemDataBase.FetchItemByPrefabPath(equippedItem.prefabPath);
+                Item item = ItemDataBase.instance.FetchItemByPrefabPath(equippedItem.prefabPath);
 
                 if (item.Type == "Weapon")
                 {

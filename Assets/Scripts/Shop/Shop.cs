@@ -9,11 +9,8 @@ using static UnityEditor.Progress;
 public class Shop : MonoBehaviour
 {
     private CameraController cameraController;
-
-    ItemDataBase itemdataBase;
     private Inventory inv;
     private QuickSlot quickSlot;
-    private PlayerData playerData;
 
     public int slotAmount;
 
@@ -42,15 +39,7 @@ public class Shop : MonoBehaviour
 
     private void Start()
     {
-        // 데이터 매니저를 통해 플레이어 데이터 로드
-        if (DataManager.instance != null)
-        {
-            DataManager.instance.LoadPlayerData();
-            playerData = DataManager.instance.playerData;
-        }
-
         cameraController = GameObject.Find("Camera").GetComponent<CameraController>();
-        itemdataBase = GameObject.Find("ItemDataBase").GetComponent<ItemDataBase>();
         inv = GameObject.Find("Inventory").GetComponent<Inventory>();
         quickSlot = GameObject.Find("QuickSlot").GetComponent<QuickSlot>();
 
@@ -75,6 +64,7 @@ public class Shop : MonoBehaviour
         CreateSlotItem(1, 1);
         CreateSlotItem(3, 3);
         CreateSlotItem(4, 4);
+        CreateSlotItem(5, 13);
         CreateSlotItem(6, 2);
         CreateSlotItem(7, 5);
         CreateSlotItem(8, 6);
@@ -94,15 +84,15 @@ public class Shop : MonoBehaviour
         DialogManager.instance.ShowDialog(purchaseConfirmationDialog);
         purchaseConfirmationImage.sprite = item.Icon;
         purchaseConfirmationText.text = $"'{item.Name}'을(를) 구매하시겠습니까?"; // 확인 메시지 설정
-        if(item.ID == 5)
+        if (item.Name == "혈검 : 적")
         {
             purchaseConfirmationText.text = $"<color=red>'{item.Name}'</color>을(를) 구매하시겠습니까?";
         }
-        else if(item.ID == 2)
+        else if (item.Name == "성검 : 청")
         {
             purchaseConfirmationText.text = $"<color=#00FFFF>'{item.Name}'</color>을(를) 구매하시겠습니까?";
         }
-        else if(item.ID == 6)
+        else if (item.Name == "광검 : 황")
         {
             purchaseConfirmationText.text = $"<color=yellow>'{item.Name}'</color>을(를) 구매하시겠습니까?";
         }
@@ -116,7 +106,7 @@ public class Shop : MonoBehaviour
 
     private void ConfirmBuyItem(Item item)
     {
-        if (playerData.gold - item.Price >= 0)
+        if (DataManager.instance.playerData.gold - item.Price >= 0)
         {
             inv.AddItem(item.ID);
             DataManager.instance.LoseGold(item.Price);
@@ -152,7 +142,7 @@ public class Shop : MonoBehaviour
         int buyAmount;
         if (int.TryParse(CountInputField.text, out buyAmount))
         {
-            if (playerData.gold - (item.Price * buyAmount) >= 0)
+            if (DataManager.instance.playerData.gold - (item.Price * buyAmount) >= 0)
             {
                 inv.AddItem(item.ID, buyAmount);
                 DataManager.instance.LoseGold(item.Price * buyAmount);
@@ -186,7 +176,7 @@ public class Shop : MonoBehaviour
     {
         Image itemIcon = slots[slotIndex].transform.Find("Image").transform.GetChild(1).GetComponent<Image>();
 
-        itemIcon.GetComponent<Image>().sprite = itemdataBase.dataBase[dataBaseID].Icon; // 아이콘 추가
+        itemIcon.GetComponent<Image>().sprite = ItemDataBase.instance.dataBase[dataBaseID].Icon; // 아이콘 추가
         Color tempColor = itemIcon.GetComponent<Image>().color;
         tempColor.a = 1f; // 불투명하게 설정 
         itemIcon.GetComponent<Image>().color = tempColor;
@@ -202,12 +192,12 @@ public class Shop : MonoBehaviour
         buyBtn.GetComponent<Image>().color = btnColor;
 
         TextMeshProUGUI priceText = slots[slotIndex].transform.GetChild(2).GetComponentInChildren<TextMeshProUGUI>(); // 해당 아이템 판매 가격 추가 
-        priceText.text = itemdataBase.dataBase[dataBaseID].Price.ToString();
+        priceText.text = ItemDataBase.instance.dataBase[dataBaseID].Price.ToString();
     }
 
     private void OnBuyButtonClicked(int itemID)
     {
-        Item item = itemdataBase.FetchItemByID(itemID);
+        Item item = ItemDataBase.instance.FetchItemByID(itemID);
 
         if (!item.Stackable)
             ShowConfirmationDialog(item);

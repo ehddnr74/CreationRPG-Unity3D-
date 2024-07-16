@@ -21,7 +21,6 @@ public class QuickSlot : MonoBehaviour
     private Inventory inv;
     private Equip equip;
     private CameraController cameraController;
-    ItemDataBase itemdataBase;
 
     public bool itemsChanged = false;
 
@@ -50,7 +49,6 @@ public class QuickSlot : MonoBehaviour
         equip = GameObject.Find("Equip").GetComponent<Equip>();
         cameraController = GameObject.Find("Camera").GetComponent<CameraController>();
         inv = GameObject.Find("Inventory").GetComponent<Inventory>();
-        itemdataBase = GameObject.Find("ItemDataBase").GetComponent<ItemDataBase>();
 
         for (int i = 0; i < slotAmount; i++)
         {
@@ -261,12 +259,24 @@ public class QuickSlot : MonoBehaviour
             /////// Use Item
             if (quickSlotDT.iconPath == "hp")
             {
-                Debug.Log("Use HP Potion");
+                if (quickSlotDT.itemAmount > 0)
+                {
+                    Item hpPotion = ItemDataBase.instance.FetchItemByIconPath(quickSlotDT.iconPath);
+                    StatManager.instance.AddHP(50);
+                    inv.RemoveItem(hpPotion.ID);
+                    RemoveQuicktSlotItem(quickSlotDT.iconPath, slotIndex, 1);
+                }
             }
 
             if (quickSlotDT.iconPath == "mp")
             {
-                Debug.Log("Use MP Potion");
+                if (quickSlotDT.itemAmount > 0)
+                {
+                    Item mpPotion = ItemDataBase.instance.FetchItemByIconPath(quickSlotDT.iconPath);
+                    StatManager.instance.AddMP(50);
+                    inv.RemoveItem(mpPotion.ID);
+                    RemoveQuicktSlotItem(quickSlotDT.iconPath, slotIndex, 1);
+                }
             }
 
 
@@ -303,11 +313,19 @@ public class QuickSlot : MonoBehaviour
                 cameraController.SetUIActiveCount(SkillManager.instance.visibleSkill);
             }
 
+            if (quickSlotDT.iconPath == "Stat")
+            {
+                StatManager.instance.visibleStat = !StatManager.instance.visibleStat;
+                StatManager.instance.statPanel.SetActive(StatManager.instance.visibleStat);
+
+                cameraController.SetUIActiveCount(StatManager.instance.visibleStat);
+            }
+
 
             ///////  Use Skill
             if (quickSlotDT.iconPath == "Nature_10") // ∫Æ∑¬¿œº∂
             {
-                int level = SkillManager.instance.skillCollection.skills[0].skillLevel;
+                int level = SkillManager.instance.skillCollection.skills["∫Æ∑¬¿œº∂"].skillLevel;
                 if (level > 0)
                 {
                     if (mAnimationEventForwarder.swordSkill)
@@ -321,7 +339,7 @@ public class QuickSlot : MonoBehaviour
 
             if (quickSlotDT.iconPath == "Fire_10") // ±ÿæ«π´µµ
             {
-                int level = SkillManager.instance.skillCollection.skills[1].skillLevel;
+                int level = SkillManager.instance.skillCollection.skills["±ÿæ«π´µµ"].skillLevel;
                 if (level > 0)
                 {
                     if (mAnimationEventForwarder.swordSkill)
@@ -334,7 +352,7 @@ public class QuickSlot : MonoBehaviour
             }
             if (quickSlotDT.iconPath == "Fire_12") // √µ¿Á¡ˆ∫Ø
             {
-                int level = SkillManager.instance.skillCollection.skills[2].skillLevel;
+                int level = SkillManager.instance.skillCollection.skills["√µ¿Á¡ˆ∫Ø"].skillLevel;
                 if (level > 0)
                 {
                     if (mAnimationEventForwarder.swordSkill)
@@ -343,6 +361,28 @@ public class QuickSlot : MonoBehaviour
                         mAnimationEventForwarder.comboStep = 2;
                         mAnimationEventForwarder.ComboAttackTrigger();
                     }
+                }
+            }
+            if (quickSlotDT.iconPath == "Nature_7") // ±›∞≠∫“±´
+            {
+                int level = SkillManager.instance.skillCollection.skills["±›∞≠∫“±´"].skillLevel;
+
+                if (level > 0)
+                {
+                    BuffManager.instance.ActivateBuff("±›∞≠∫“±´", quickSlotDT.itemIcon, SkillManager.instance.skillCollection.skills["±›∞≠∫“±´"].levelEffects[level].buffDuration);
+                    StatManager.instance.UpdateStatActiveHyperBody();
+                }
+            }
+
+            if (quickSlotDT.iconPath == "Dark_11") // »≠∑Ê¡°¡§
+            {
+                int level = SkillManager.instance.skillCollection.skills["»≠∑Ê¡°¡§"].skillLevel;
+
+                if (level > 0)
+                {
+                    BuffManager.instance.ActivateBuff("»≠∑Ê¡°¡§", quickSlotDT.itemIcon, SkillManager.instance.skillCollection.skills["»≠∑Ê¡°¡§"].levelEffects[level].buffDuration);
+                    StatManager.instance.statData.criticalProbability = StatManager.instance.statData.originCriticalProbability + (int)SkillManager.instance.skillCollection.skills["»≠∑Ê¡°¡§"].levelEffects[level].criticalChanceIncrease;
+                    StatManager.instance.UpdateStatActiveCriticalSkill();
                 }
             }
         }

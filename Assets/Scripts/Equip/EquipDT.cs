@@ -8,13 +8,11 @@ public class EquipDT : MonoBehaviour, IPointerClickHandler
 {
     public GameObject item;
     private Inventory inv;
-    private ItemDataBase itemDataBase;
     private PlayerController playerController;
 
     // Start is called before the first frame update
     void Start()
     {
-        itemDataBase = GameObject.Find("ItemDataBase").GetComponent<ItemDataBase>();
         inv = GameObject.Find("Inventory").GetComponent<Inventory>();
         playerController = GameObject.Find("Player").GetComponent<PlayerController>();
     }
@@ -29,7 +27,7 @@ public class EquipDT : MonoBehaviour, IPointerClickHandler
     void UnEquip()
     {
         Image itemIcon = gameObject.GetComponent<Image>();
-        Item item = itemDataBase.FetchItemByIcon(itemIcon.sprite);
+        Item item = ItemDataBase.instance.FetchItemByIcon(itemIcon.sprite);
 
         if (item != null)
         {

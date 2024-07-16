@@ -15,7 +15,6 @@ public class QuestManager : MonoBehaviour
     private Inventory inv;
     private CameraController cameraController;
     public QuestData questData;
-    private ItemDataBase itemDataBase;
     private string path;
 
     public GameObject questPanel;
@@ -56,7 +55,6 @@ public class QuestManager : MonoBehaviour
 
     private void Start()
     {
-        itemDataBase = GameObject.Find("ItemDataBase").GetComponent<ItemDataBase>();
         cameraController = GameObject.Find("Camera").GetComponent<CameraController>();
         inv = GameObject.Find("Inventory").GetComponent<Inventory>();
         questPanel.SetActive(visibleQuest);
@@ -70,27 +68,6 @@ public class QuestManager : MonoBehaviour
         if (!visibleQuest)
         {
             HideQuestInfo();
-        }
-    }
-
-    public void SaveQuests()
-    {
-        string data = JsonConvert.SerializeObject(questData, Formatting.Indented);
-        File.WriteAllText(path, data);
-    }
-
-    public void LoadQuests()
-    {
-        if (File.Exists(path))
-        {
-            string data = File.ReadAllText(path);
-            questData = JsonConvert.DeserializeObject<QuestData>(data);
-            Debug.Log("Quests loaded successfully");
-        }
-        else
-        {
-            Debug.LogWarning("Quest file not found, creating new one.");
-            questData = new QuestData { quests = new List<Quest>() };
         }
     }
 
@@ -182,25 +159,23 @@ public class QuestManager : MonoBehaviour
     // 게임 시작할 때 QuestUI
     private void InitializeQuestUI()
     {
-
         // 기존의 UI 요소들 제거
         ClearQuestUI(notStartedContent.transform);
         ClearQuestUI(progressContent.transform);
         ClearQuestUI(completeContent.transform);
 
-        // 플레이어 레벨을 가져오기 (예시로 플레이어 레벨이 13이라고 가정)
         int playerLevel = DataManager.instance.playerData.level;
 
         // 퀘스트 상태에 따라 UI 요소 생성
         foreach (var quest in questData.quests)
         {
-            if (quest.status == "시작 가능" && quest.possibleLevel <= playerLevel)
+            if (quest.status == "시작가능" && quest.possibleLevel <= playerLevel)
             {
                 GameObject obj = Instantiate(titlePrefab, notStartedContent.transform, false);
                 obj.GetComponentInChildren<TextMeshProUGUI>().text = quest.name;
                 obj.GetComponent<QuestInfoButton>().quest = quest;
             }
-            else if (quest.status == "진행 중")
+            else if (quest.status == "진행중")
             {
                 GameObject obj = Instantiate(titlePrefab, progressContent.transform, false);
                 obj.GetComponentInChildren<TextMeshProUGUI>().text = quest.name;
@@ -213,6 +188,23 @@ public class QuestManager : MonoBehaviour
                 obj.GetComponent<QuestInfoButton>().quest = quest;
             }
         }
+    }
+
+    public void LevelUpToShowQuest()
+    {
+        int playerLevel = DataManager.instance.playerData.level;
+
+        foreach (var quest in questData.quests)
+        {
+            if (quest.status == "시작가능" && quest.possibleLevel <= playerLevel && !quest.alreadyAccept)
+            {
+                quest.alreadyAccept = true;
+                GameObject obj = Instantiate(titlePrefab, notStartedContent.transform, false);
+                obj.GetComponentInChildren<TextMeshProUGUI>().text = quest.name;
+                obj.GetComponent<QuestInfoButton>().quest = quest;
+            }
+        }
+        SaveQuests();
     }
 
     private void ClearQuestUI(Transform parentTransform)
@@ -257,7 +249,7 @@ public class QuestManager : MonoBehaviour
         {
             Image rewardItemImage = rewardSlots[i].transform.GetChild(0).GetComponentInChildren<Image>();
 
-            Item item = itemDataBase.FetchItemByID(quest.reward.items[i].itemId);
+            Item item = ItemDataBase.instance.FetchItemByID(quest.reward.items[i].itemId);
             rewardItemImage.sprite = item.Icon;
 
             Color tempColor = rewardItemImage.color;
@@ -297,4 +289,26 @@ public class QuestManager : MonoBehaviour
         rewardPanel.SetActive(false);
     }
 
+
+
+    public void SaveQuests()
+    {
+        string data = JsonConvert.SerializeObject(questData, Formatting.Indented);
+        File.WriteAllText(path, data);
+    }
+
+    public void LoadQuests()
+    {
+        if (File.Exists(path))
+        {
+            string data = File.ReadAllText(path);
+            questData = JsonConvert.DeserializeObject<QuestData>(data);
+            Debug.Log("Quests loaded successfully");
+        }
+        else
+        {
+            Debug.LogWarning("Quest file not found, creating new one.");
+            questData = new QuestData { quests = new List<Quest>() };
+        }
+    }
 }

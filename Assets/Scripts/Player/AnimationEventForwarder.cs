@@ -30,7 +30,7 @@ public class AnimationEventForwarder : MonoBehaviour
 
     private void Update()
     {
-        if (Input.GetMouseButtonDown(0) && canAttack && cameraController.isUIActiveCount <= 0) // UI활성화 중에는 공격 안되게 막음
+        if (Input.GetMouseButtonDown(0) && canAttack && cameraController.isUIActiveCount <= 0 && !cameraController.pressTab) // UI활성화 중에는 공격 안되게 막음
         {
             parentController.isAttacking = true;
             ComboAttackTrigger();

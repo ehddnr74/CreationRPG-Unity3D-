@@ -18,12 +18,12 @@ public class Adel : MonoBehaviour
         playerLevel = DataManager.instance.playerData.level;
 
         if (playerLevel >= QuestManager.instance.questData.quests[1].possibleLevel
-            && QuestManager.instance.questData.quests[1].status == "시작 가능")
+            && QuestManager.instance.questData.quests[1].status == "시작가능")
         {
             possibleQuest = true;
             dialogManager.quest = QuestManager.instance.questData.quests[1];
         }
-        if(QuestManager.instance.questData.quests[1].status == "진행 중")
+        if(QuestManager.instance.questData.quests[1].status == "진행중")
         {
             possibleQuest = false;
         }

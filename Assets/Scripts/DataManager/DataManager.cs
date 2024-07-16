@@ -10,16 +10,12 @@ public class DataManager : MonoBehaviour
     public static DataManager instance;
 
     public PlayerData playerData;
-    public ItemData itemData; // ItemData 변수 추가
 
-    private Shop shop;
-    private Inventory inv;
     private PlayerManager playerManager;
 
     string path;
     string playerDataFileName = "PlayerData"; // 플레이어 데이터 파일명
-    string itemDataFileName = "Item"; // 아이템 데이터 파일명
-
+    
     private void Awake()
     {
         if (instance == null)
@@ -37,13 +33,83 @@ public class DataManager : MonoBehaviour
 
     private void Start()
     {
-        shop = GameObject.Find("Shop").GetComponent<Shop>();
-        inv = GameObject.Find("Inventory").GetComponent<Inventory>();
         playerManager = FindObjectOfType<PlayerManager>();
 
-        //LoadPlayerData(); // 플레이어 데이터 로드
-        LoadItemData(); // 아이템 데이터 로드
+        LoadPlayerData(); // 플레이어 데이터 로드
+        LoadStatTableData(); // 레벨 별 HP/MP 테이블 로드
+        LoadExperienceTableData();
     }
+
+    private void Update()
+    {
+        if(Input.GetKeyDown(KeyCode.U))
+        {
+            AddExperience(50);
+        }
+    }
+
+    public void AddGold(int gold)
+    {
+        playerData.gold += gold;
+        playerManager.UpdateGoldText();
+
+        SavePlayerData();
+    }
+    public void LoseGold(int gold)
+    {
+        if (playerData.gold - gold < 0)
+        {
+            return;
+        }
+        playerData.gold -= gold;
+        playerManager.UpdateGoldText();
+
+        SavePlayerData();
+    }
+    public void AddExperience(int amount)
+    {
+        playerData.experience += amount;
+        if (playerData.experience >= playerData.experienceTable[playerData.level])
+        {
+            playerData.level++;
+            playerData.experience = 0; // 레벨업 후 경험치 초기화 (또는 남은 경험치 계산)
+
+            // 레벨업 후 HP / MP를 증가량만큼 올려줌
+            StatManager.instance.statData.maxHp += playerData.baseHPTable[playerData.level] - playerData.baseHPTable[playerData.level - 1];
+            StatManager.instance.statData.maxMp += playerData.baseMPTable[playerData.level] - playerData.baseMPTable[playerData.level - 1];
+
+            StatManager.instance.UpdateStatLevel();
+
+            if (!StatManager.instance.hyperBody)
+            {
+                StatManager.instance.UpdateStatStatus();
+            }
+            else
+            {
+                StatManager.instance.UpdateStatActiveHyperBody();
+            }
+
+            StatManager.instance.UpdateStatExperience();
+            QuestManager.instance.LevelUpToShowQuest();
+
+            SkillManager.instance.skillCollection.skillPoint += 3;
+            SkillManager.instance.itemChanged = true;
+        }
+        SavePlayerData();
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
     public void SavePlayerData()
     {
         string data = JsonUtility.ToJson(playerData, true);
@@ -68,42 +134,43 @@ public class DataManager : MonoBehaviour
         }
     }
 
-    public void LoadItemData()
+    private void LoadStatTableData()
     {
-        string itemDataPath = path + itemDataFileName + ".json";
+        string HpLevelPath = path + "BaseHpTable.json";
+        string MpLevelPath = path + "BaseMpTable.json";
 
-        if (File.Exists(itemDataPath))
+        if (File.Exists(HpLevelPath))
         {
-            string itemDataJson = File.ReadAllText(itemDataPath);
-            itemData = JsonConvert.DeserializeObject<ItemData>(itemDataJson);
-            Debug.Log("Item data loaded successfully");
+            string HpLevelJson = File.ReadAllText(HpLevelPath);
+            playerData.baseHPTable = JsonConvert.DeserializeObject<Dictionary<int, int>>(HpLevelJson);
+        }
+        else
+        {
+            Debug.LogWarning("Level baseHPTable data file not found");
+        }
+
+        if (File.Exists(MpLevelPath))
+        {
+            string MpLevelJson = File.ReadAllText(MpLevelPath);
+            playerData.baseMPTable = JsonConvert.DeserializeObject<Dictionary<int, int>>(MpLevelJson);
+        }
+        else
+        {
+            Debug.LogWarning("Level baseHPTable data file not found");
         }
     }
-
-    public void AddGold(int gold)
+    private void LoadExperienceTableData()
     {
-        playerData.gold += gold;
-        playerManager.UpdateInventoryGoldText(playerData);
+        string levelExperiencePath = path + "ExperienceTable.json";
 
-        if (shop.visibleShop)
-            playerManager.UpdateShopGoldText(playerData);
-
-        SavePlayerData();
-    }
-    public void LoseGold(int gold)
-    {
-        if (playerData.gold - gold < 0)
+        if (File.Exists(levelExperiencePath))
         {
-            return;
+            string levelExperienceJson = File.ReadAllText(levelExperiencePath);
+            playerData.experienceTable = JsonConvert.DeserializeObject<Dictionary<int, int>>(levelExperienceJson);
         }
-        playerData.gold -= gold;
-        playerManager.UpdateInventoryGoldText(playerData);
-
-        if (shop.visibleShop)
-            playerManager.UpdateShopGoldText(playerData);
-
-        SavePlayerData();
+        else
+        {
+            Debug.LogWarning("Level experience data file not found");
+        }
     }
-
-
 }

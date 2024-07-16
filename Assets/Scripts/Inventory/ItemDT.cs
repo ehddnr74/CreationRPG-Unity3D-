@@ -11,7 +11,6 @@ public class ItemDT : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHa
     public int amount;
     public int slot;
 
-    private ItemDataBase itemDataBase;
     private Inventory inv;
     private Shop shop;
     private Equip equip;
@@ -24,7 +23,6 @@ public class ItemDT : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHa
 
     void Start()
     {
-        itemDataBase = GameObject.Find("ItemDataBase").GetComponent<ItemDataBase>();
         inv = GameObject.Find("Inventory").GetComponent<Inventory>();
         shop = GameObject.Find("Shop").GetComponent<Shop>();
         equip = GameObject.Find("Equip").GetComponent<Equip>();
@@ -108,13 +106,11 @@ public class ItemDT : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHa
                 {
                     playerController = GameObject.Find("Player").GetComponent<PlayerController>();
 
-                    playerController.EquipShield(item.Prefab, item.prefabPath); // 무기 장착
+                    playerController.EquipShield(item.Prefab, item.prefabPath); // 실드 장착
 
                     EquipSetting(2, slot); //Equip창의 UI갱신과 Inventory 갱신 
                 }
-              
             }
-            
         }
     }
 
@@ -125,7 +121,7 @@ public class ItemDT : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHa
 
         if (equipImage.sprite != null)
         {
-            Item previousItem = itemDataBase.FetchItemByIcon(equipImage.sprite);
+            Item previousItem = ItemDataBase.instance.FetchItemByIcon(equipImage.sprite);
             inv.RemoveItem(item.ID, slot);
             inv.AddItem(previousItem.ID, slot, 0);
             equipImage.sprite = item.Icon;

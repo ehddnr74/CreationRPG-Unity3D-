@@ -7,6 +7,7 @@ public class Quest
 {
     public int id;
     public int possibleLevel; // 시작 가능 레벨
+    public bool alreadyAccept; // 받은적 있는 퀘스트인지 
     public string name; // 퀘스트 이름 
     public string description; // 설명 
     public string objective; // 해야할 것  

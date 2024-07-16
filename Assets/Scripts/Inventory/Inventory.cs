@@ -18,7 +18,6 @@ public class Inventory : MonoBehaviour
 
     public GameObject content;
 
-    ItemDataBase itemdataBase;
     private QuickSlot quickSlot;
 
     public int slotAmount;
@@ -48,7 +47,6 @@ public class Inventory : MonoBehaviour
     void Start()
     {
         cameraController = GameObject.Find("Camera").GetComponent<CameraController>();
-        itemdataBase = GameObject.Find("ItemDataBase").GetComponent<ItemDataBase>();
         quickSlot = GameObject.Find("QuickSlot").GetComponent<QuickSlot>();
 
         slotPanel = GameObject.Find("Slot Panel");
@@ -81,6 +79,22 @@ public class Inventory : MonoBehaviour
         DialogManager.instance.ShowDialog(confirmationDialog);
         confirmationImage.sprite = item.Icon;
         confirmationText.text = $"'{item.Name}'을(를) 판매하시겠습니까?"; // 확인 메시지 설정
+        if (item.Name == "혈검 : 적")
+        {
+            confirmationText.text = $"<color=red>'{item.Name}'</color>을(를) 판매하시겠습니까?";
+        }
+        else if (item.Name == "성검 : 청")
+        {
+            confirmationText.text = $"<color=#00FFFF>'{item.Name}'</color>을(를) 판매하시겠습니까?";
+        }
+        else if (item.Name == "광검 : 황")
+        {
+            confirmationText.text = $"<color=yellow>'{item.Name}'</color>을(를) 판매하시겠습니까?";
+        }
+        else
+        {
+            confirmationText.text = $"<color=white>'{item.Name}'</color>을(를) 판매하시겠습니까?";
+        }
         confirmButton.onClick.RemoveAllListeners();
         confirmButton.onClick.AddListener(() => ConfirmSellItem(item, slot));
     }
@@ -171,7 +185,7 @@ public class Inventory : MonoBehaviour
 
     public void AddItem(int id)
     {
-        Item itemToAdd = itemdataBase.FetchItemByID(id);
+        Item itemToAdd = ItemDataBase.instance.FetchItemByID(id);
         if (itemToAdd.Stackable && CheckIfItemIsInInventory(itemToAdd))
         {
             for (int i = 0; i < items.Count; i++)
@@ -210,7 +224,7 @@ public class Inventory : MonoBehaviour
 
     public void AddItem(int id, int slotNum, int a) // 장비 착용할 때 
     {
-        Item itemToAdd = itemdataBase.FetchItemByID(id);
+        Item itemToAdd = ItemDataBase.instance.FetchItemByID(id);
 
         if (items[slotNum].ID == -1)
         {
@@ -231,7 +245,7 @@ public class Inventory : MonoBehaviour
 
     public void AddItem(int id, int amount)
     {
-        Item itemToAdd = itemdataBase.FetchItemByID(id);
+        Item itemToAdd = ItemDataBase.instance.FetchItemByID(id);
         if (itemToAdd.Stackable && CheckIfItemIsInInventory(itemToAdd))
         {
             for (int i = 0; i < items.Count; i++)
@@ -374,7 +388,7 @@ public class Inventory : MonoBehaviour
             // 인벤토리 정보를 기반으로 슬롯에 아이템 배치
             foreach (InventoryItem inventoryItem in inventoryItems)
             {
-                Item item = itemdataBase.FetchItemByID(inventoryItem.ID);
+                Item item = ItemDataBase.instance.FetchItemByID(inventoryItem.ID);
                 items[inventoryItem.slotnum] = item;
 
                 // 슬롯에 아이템 배치

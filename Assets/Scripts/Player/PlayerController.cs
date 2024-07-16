@@ -28,6 +28,7 @@ public class PlayerController : MonoBehaviour
     public float smoothness = 10f;
 
     public GameObject currentWeapon;
+    public GameObject currentShield;
 
     private void Start()
     {
