@@ -7,6 +7,7 @@ public class SkillData
 {
     public string skillName; // 스킬 이름
     public string skillType; // 스킬 타입 (공격,패시브,버프 등)
+    public string skillDescription; // 스킬 설명
     public int skillLevel; // 스킬 레벨
     public int minLevel; // 스킬 최소 레벨
     public int maxLevel; // 스킬 최대 레벨
@@ -24,6 +25,7 @@ public class SkillCollection
 [System.Serializable]
 public class SkillEffect
 {
+    public string descrption; // 레벨 단위 스킬 효과 설명
     public int hpReduction; // HP 소모량
     public int mpReduction; // MP 소모량
     public float damageIncrease; // 데미지 증가량

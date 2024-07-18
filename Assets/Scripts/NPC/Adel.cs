@@ -1,49 +1,42 @@
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 
 public class Adel : MonoBehaviour
 {
+    public string npcName;
     public int playerLevel;
     public bool possibleQuest = false;
     DialogueManager dialogManager;
+
+    public Transform nameTagPosition;
+
 
     private void Start()
     {
         dialogManager = GameObject.Find("DialogueUI").GetComponent<DialogueManager>();
     }
 
-    public bool CheckPossibleQuest()
+    public bool CheckPossibleQuest(int questID)
     {
         playerLevel = DataManager.instance.playerData.level;
 
-        if (playerLevel >= QuestManager.instance.questData.quests[1].possibleLevel
-            && QuestManager.instance.questData.quests[1].status == "시작가능")
+        if (playerLevel >= QuestManager.instance.questData.quests[questID].possibleLevel
+            && QuestManager.instance.questData.quests[questID].status == "시작가능")
         {
             possibleQuest = true;
-            dialogManager.quest = QuestManager.instance.questData.quests[1];
+            dialogManager.quest = QuestManager.instance.questData.quests[questID];
         }
-        if(QuestManager.instance.questData.quests[1].status == "진행중")
+        if(QuestManager.instance.questData.quests[questID].status == "진행중")
         {
             possibleQuest = false;
         }
-        if (QuestManager.instance.questData.quests[1].status == "완료")
+        if (QuestManager.instance.questData.quests[questID].status == "완료")
         {
             possibleQuest = false;
         }
 
         return possibleQuest;
     }
-    void Update()
-    {
-        if (Input.GetKeyDown(KeyCode.Alpha8))
-        {
-            QuestManager.instance.StartQuest(1);
-        }
-        if (Input.GetKeyDown(KeyCode.Alpha9))
-        {
-            QuestManager.instance.CompleteQuest(1);
-        }
-    }
-
 }

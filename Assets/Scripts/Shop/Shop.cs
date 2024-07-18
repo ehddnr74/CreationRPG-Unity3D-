@@ -20,6 +20,7 @@ public class Shop : MonoBehaviour
     public GameObject shopitem;
 
     private Button buyBtn;
+    public Button ExitBtn;
 
     public List<GameObject> slots = new List<GameObject>();
 
@@ -56,6 +57,7 @@ public class Shop : MonoBehaviour
 
             GameObject item = Instantiate(shopitem);
             item.transform.SetParent(slots[i].transform.GetChild(0), false);
+            item.GetComponent<ShopDT>().slot = i;
         }
 
 
@@ -77,6 +79,8 @@ public class Shop : MonoBehaviour
 
         stackablePurchaseConfirmButton.onClick.AddListener(OnStackableConfirmButtonClick);
         stackablePurchaseCancelButton.onClick.AddListener(OnStackableCancelButtonClick);
+
+        ExitBtn.onClick.AddListener(OnExit);
     }
 
     public void ShowConfirmationDialog(Item item)
@@ -122,6 +126,7 @@ public class Shop : MonoBehaviour
     private void OnCancelButtonClick()
     {
         purchaseConfirmationDialog.SetActive(false);
+        DialogManager.instance.visibleShopDialogs = false;
     }
 
     public void ShowStackableConfirmationDialog(Item item)
@@ -169,11 +174,20 @@ public class Shop : MonoBehaviour
     private void OnStackableCancelButtonClick()
     {
         stackablePurchaseConfirmationDialog.SetActive(false);
+        DialogManager.instance.visibleShopDialogs = false;
     }
 
+    private void OnExit()
+    {
+        visibleShop = !visibleShop;
+        shopPanel.SetActive(visibleShop);
+
+        cameraController.SetUIActiveCount(visibleShop);
+    }
 
     private void CreateSlotItem(int slotIndex, int dataBaseID)
     {
+        slots[slotIndex].transform.Find("Image").GetChild(2).GetComponent<ShopDT>().item = ItemDataBase.instance.dataBase[dataBaseID];
         Image itemIcon = slots[slotIndex].transform.Find("Image").transform.GetChild(1).GetComponent<Image>();
 
         itemIcon.GetComponent<Image>().sprite = ItemDataBase.instance.dataBase[dataBaseID].Icon; // 아이콘 추가
@@ -204,16 +218,4 @@ public class Shop : MonoBehaviour
         else
             ShowStackableConfirmationDialog(item);
     }
-
-    private void Update()
-    {
-        if(Input.GetKeyDown(KeyCode.Alpha1))
-        {
-            visibleShop = !visibleShop;
-            shopPanel.SetActive(visibleShop);
-
-            cameraController.SetUIActiveCount(visibleShop);
-        }
-    }
-
 }

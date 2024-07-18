@@ -7,6 +7,7 @@ using System.IO;
 using TMPro;
 using UnityEngine.Events;
 using System;
+using static UnityEditor.Progress;
 
 public class QuestManager : MonoBehaviour
 {
@@ -28,6 +29,8 @@ public class QuestManager : MonoBehaviour
     public TextMeshProUGUI questSummaryTitle;
     public TextMeshProUGUI questSummaryText;
     public TextMeshProUGUI RewardTitle;
+    public TextMeshProUGUI npcText;
+    public TextMeshProUGUI npcNameText;
 
 
     public GameObject rewardItem;
@@ -76,12 +79,29 @@ public class QuestManager : MonoBehaviour
         return questData.quests.Find(quest => quest.id == id);
     }
 
+    public Quest FindQuestByName(string questName)
+    {
+        foreach (Quest quest in questData.quests)
+        {
+            if (quest.name == questName)
+            {
+                return quest;
+            }
+        }
+        return null; // 해당 이름의 퀘스트가 없는 경우
+    }
+
     public void StartQuest(int id)
     {
         Quest quest = GetQuestById(id);
-        if (quest != null && quest.status == "시작 가능")
+        if (quest != null && quest.status == "시작가능")
         {
-            quest.status = "진행 중";
+            if(quest.name == "여정의 시작")
+            {
+                inv.AddItem(0, 10);
+                inv.AddItem(1, 10);
+            }
+            quest.status = "진행중";
             SaveQuests();
 
             // 시작 가능 목록에서 제거하고 진행 중 목록에 추가
@@ -92,16 +112,22 @@ public class QuestManager : MonoBehaviour
     public void CompleteQuest(int id)
     {
         Quest quest = GetQuestById(id);
-        if (quest != null && quest.status == "진행 중")
+        if (quest != null && quest.status == "진행중")
         {
             quest.status = "완료";
+
+            DataManager.instance.AddExperience(quest.reward.experience);
+            DataManager.instance.AddGold(quest.reward.gold);
 
             // 아이템 보상 추가
             foreach (var rewardItem in quest.reward.items)
             {
-                inv.AddItem(rewardItem.itemId, rewardItem.amount);
+                if (rewardItem.itemId != 12 && rewardItem.itemId !=14) // == 12 : Gold(인벤토리 Icon으로 추가되서는 안됨)
+                {                                                      // == 14 : Experience(경험치)
+                    inv.AddItem(rewardItem.itemId, rewardItem.amount);
+                }
             }
-
+            
             // UI 업데이트: 진행 중에서 제거하고 완료에 추가
             UpdateQuestUI(quest);
 
@@ -109,12 +135,12 @@ public class QuestManager : MonoBehaviour
         }
     }
 
-    private void UpdateQuestUI(Quest quest)
+    public void UpdateQuestUI(Quest quest)
     {
         Transform parentTransform = null;
 
         // 퀘스트의 현재 상태에 따른 부모 Transform 설정
-        if (quest.status == "진행 중")
+        if (quest.status == "진행중")
         {
             parentTransform = progressContent.transform;
         }
@@ -127,7 +153,7 @@ public class QuestManager : MonoBehaviour
         if (parentTransform != null)
         {
             // 이전 상태에 따라 적절한 목록에서 제거
-            if (quest.status == "진행 중")
+            if (quest.status == "진행중")
             {
                 RemoveQuestFromUI(notStartedContent.transform, quest.name);
             }
@@ -231,7 +257,37 @@ public class QuestManager : MonoBehaviour
         questTitleText.text = quest.name;
         descriptionText.text = quest.description;
         questSummaryTitle.text = "퀘스트 요약";
-        questSummaryText.text = quest.objective;
+
+        npcText.text = "NPC : ";
+
+        if(quest.npcName == "카인")
+        {
+            npcNameText.text = $"[<color=red>혈기사</color>]\n카인";
+        }
+        if (quest.npcName == "아델")
+        {
+            npcNameText.text = $"[<color=#00FFFF>성기사</color>]\n아델";
+        }
+
+        if (quest.name == "여정의 시작" && quest.status == "진행중")
+        {
+            questSummaryText.text = $"드래곤 사냥 {quest.currentKillCount} / {quest.targetKillCount}";
+        }
+        else if(quest.name == "약초를 만들어야해!" && quest.status == "진행중")
+        {
+            for (int i = 0; i < inv.items.Count; i++)
+            {
+                if (inv.items[i].ID == 0)
+                {
+                    ItemDT data = inv.slots[i].transform.GetChild(0).GetComponent<ItemDT>();
+                    questSummaryText.text = $" 전설의 체력물약 {data.amount} / {quest.maxCollectionCount}";
+                }
+            }
+        }
+        else
+        {
+            questSummaryText.text = quest.objective;
+        }
         RewardTitle.text = "보상";
 
         // 모든 보상 슬롯 초기화
@@ -271,6 +327,8 @@ public class QuestManager : MonoBehaviour
         questSummaryTitle.text = "";
         questSummaryText.text = "";
         RewardTitle.text = "";
+        npcText.text = "";
+        npcNameText.text = "";
 
         // 모든 보상 슬롯 초기화
         foreach (var slot in rewardSlots)

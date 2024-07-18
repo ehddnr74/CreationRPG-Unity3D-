@@ -21,12 +21,15 @@ public class SkillDT : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragH
 
     public GameObject nonDragableskillIcon;
 
-    public string skillName;
+    public string skillName = "";
     public string skillType;
+    public string skillDescription;
     public int skillMasterLevel;
     public int skillMinLevel;
     public int skillLevel;
     public Sprite skillIcon;
+
+    public List<string> skillLevelDescription;
 
     void Start()
     {
@@ -86,11 +89,19 @@ public class SkillDT : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragH
     }
     public void OnPointerEnter(PointerEventData eventData)
     {
-        skillTooltip.Activate(skillName, skillMinLevel, skillMasterLevel, skillLevel);
+        if (skillName != "") // 등록되지 않은 스킬슬롯의 툴팁 활성화 오류를 막기 위함
+        {
+            MovableUI._globalSortingOrderCounter++;
+            transform.GetComponentInParent<Canvas>().sortingOrder = MovableUI._globalSortingOrderCounter;
+            skillTooltip.Activate(skillIcon, skillName, skillDescription, skillMinLevel, skillMasterLevel, skillLevel, skillLevelDescription);
+        }
     }
 
     public void OnPointerExit(PointerEventData eventData)
     {
-        skillTooltip.Deactivate();
+        if (skillName != "")
+        {
+            skillTooltip.Deactivate();
+        }
     }
 }

@@ -38,7 +38,7 @@ public class PlayerManager : MonoBehaviour
         if (InventorygGoldText != null)
             InventorygGoldText.text = DataManager.instance.playerData.gold.ToString();
 
-        if (shopGoldText != null && shop.visibleShop)
+        if (shopGoldText != null && DataManager.instance.playerData != null)
             shopGoldText.text = DataManager.instance.playerData.gold.ToString();
     }
 }

@@ -8,6 +8,8 @@ public class DialogManager : MonoBehaviour
 
     public GameObject[] dialogs;
 
+    public bool visibleShopDialogs;
+
     private void Awake()
     {
         if (instance == null)
@@ -28,6 +30,7 @@ public class DialogManager : MonoBehaviour
             dialog.SetActive(false);
         }
         dialogToShow.SetActive(true);
+        visibleShopDialogs = true;
         Canvas canvas = dialogToShow.transform.parent.GetComponent<Canvas>();
 
         // _globalSortingOrderCounter를 static으로 접근
@@ -41,5 +44,6 @@ public class DialogManager : MonoBehaviour
         {
             dialog.SetActive(false);
         }
+        visibleShopDialogs = false;
     }
 }

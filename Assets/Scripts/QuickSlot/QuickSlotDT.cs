@@ -96,7 +96,7 @@ public class QuickSlotDT : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndD
         if (eventData.button == PointerEventData.InputButton.Right)
         {
             if (iconPath != "Inventory" && iconPath != "Quest" && iconPath != "Equip"
-                && iconPath != "Skill" && iconPath != "Stat")
+                && iconPath != "Skill" && iconPath != "Stat" && iconPath != "Interaction")
             {
                 // 마우스 오른쪽 클릭 시 아이템 아이콘을 지우고, 해당 슬롯의 정보를 초기화
                 itemIcon = null;

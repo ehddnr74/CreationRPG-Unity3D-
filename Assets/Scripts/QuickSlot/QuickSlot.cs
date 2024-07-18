@@ -23,6 +23,8 @@ public class QuickSlot : MonoBehaviour
     private CameraController cameraController;
 
     public bool itemsChanged = false;
+    public bool interactable = false;
+    public bool checkInteraction = false;
 
     public List<GameObject> slots = new List<GameObject>();
 
@@ -262,7 +264,7 @@ public class QuickSlot : MonoBehaviour
                 if (quickSlotDT.itemAmount > 0)
                 {
                     Item hpPotion = ItemDataBase.instance.FetchItemByIconPath(quickSlotDT.iconPath);
-                    StatManager.instance.AddHP(50);
+                    StatManager.instance.AddHP(300); // Json에 recoveryHP 추가 해도됨 일단 임시로 ...
                     inv.RemoveItem(hpPotion.ID);
                     RemoveQuicktSlotItem(quickSlotDT.iconPath, slotIndex, 1);
                 }
@@ -273,7 +275,7 @@ public class QuickSlot : MonoBehaviour
                 if (quickSlotDT.itemAmount > 0)
                 {
                     Item mpPotion = ItemDataBase.instance.FetchItemByIconPath(quickSlotDT.iconPath);
-                    StatManager.instance.AddMP(50);
+                    StatManager.instance.AddMP(300); // Json에 recoveryMP 추가 해도됨 일단 임시로 ...
                     inv.RemoveItem(mpPotion.ID);
                     RemoveQuicktSlotItem(quickSlotDT.iconPath, slotIndex, 1);
                 }
@@ -321,6 +323,13 @@ public class QuickSlot : MonoBehaviour
                 cameraController.SetUIActiveCount(StatManager.instance.visibleStat);
             }
 
+            if (quickSlotDT.iconPath == "Interaction")
+            {
+                if (interactable && !checkInteraction)
+                {
+                    checkInteraction = true;
+                }
+            }
 
             ///////  Use Skill
             if (quickSlotDT.iconPath == "Nature_10") // 벽력일섬

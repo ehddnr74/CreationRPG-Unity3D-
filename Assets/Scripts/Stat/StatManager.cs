@@ -82,9 +82,11 @@ public class StatManager : MonoBehaviour
         // 경험치
         experienceText.text = $"{DataManager.instance.playerData.experience} / {DataManager.instance.playerData.experienceTable[DataManager.instance.playerData.level]}";
         // 공격력
-        attackpowerText.text = statData.attackPower.ToString();
+        statData.extraAttackPower = 0;
+        UpdateStatAttackPower();
         // 방어력
-        defenseText.text = statData.defense.ToString();
+        statData.extraDefense = 0;
+        UpdateStatDefense();
         // 크리티컬 확률
         criticalProbabilityText.text =  $"{statData.originCriticalProbability}%";
     }
@@ -131,8 +133,8 @@ public class StatManager : MonoBehaviour
 
         int level = SkillManager.instance.skillCollection.skills["금강불괴"].skillLevel;
 
-        statData.buffMaxHp = statData.maxHp * (int)SkillManager.instance.skillCollection.skills["금강불괴"].levelEffects[level].hpIncrease;
-        statData.buffMaxMp = statData.maxMp * (int)SkillManager.instance.skillCollection.skills["금강불괴"].levelEffects[level].mpIncrease;
+        statData.buffMaxHp = Mathf.CeilToInt(statData.maxHp * SkillManager.instance.skillCollection.skills["금강불괴"].levelEffects[level].hpIncrease);
+        statData.buffMaxMp = Mathf.CeilToInt(statData.maxMp * SkillManager.instance.skillCollection.skills["금강불괴"].levelEffects[level].mpIncrease);
 
         hpText.text = $"{statData.hp} / {statData.buffMaxHp}"; // HP
         mpText.text = $"{statData.mp} / {statData.buffMaxMp}"; // MP
@@ -172,12 +174,12 @@ public class StatManager : MonoBehaviour
     }
     public void UpdateStatAttackPower()
     {
-      attackpowerText.text = statData.attackPower.ToString();
+        attackpowerText.text = $"공격력 : {statData.attackPower} + (<color=red>{statData.extraAttackPower}</color>)";
         SaveStat();
     }
     public void UpdateStatDefense()
     {
-        defenseText.text = statData.defense.ToString();
+        defenseText.text = $"방어력 : {statData.defense} + (<color=red>{statData.extraDefense}</color>)";
         SaveStat();
     }
     public void UpdateStatActiveCriticalSkill()

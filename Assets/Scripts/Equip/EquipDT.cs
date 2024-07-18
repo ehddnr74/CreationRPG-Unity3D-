@@ -35,11 +35,15 @@ public class EquipDT : MonoBehaviour, IPointerClickHandler
             {
                 if (item.Type == "Weapon")
                 {
-                    playerController.EquipWeapon(null, item.prefabPath);  // 무기 장착 해제 
+                    StatManager.instance.statData.extraAttackPower -= item.increaseAttackPower;
+                    StatManager.instance.UpdateStatAttackPower();
+                    playerController.EquipWeapon(item, null, item.prefabPath);  // 무기 장착 해제 
                 }
                 else if (item.Type == "Shield")
                 {
-                    playerController.EquipShield(null, item.prefabPath); // 방패 장착 해제
+                    StatManager.instance.statData.extraDefense -= item.increaseDefense;
+                    StatManager.instance.UpdateStatDefense();
+                    playerController.EquipShield(item, null, item.prefabPath); // 방패 장착 해제
                 }
 
                 inv.AddItem(item.ID);

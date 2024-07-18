@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using TMPro;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -98,9 +99,22 @@ public class SkillManager : MonoBehaviour
                 Sprite Icon = Resources.Load<Sprite>("Items/" + skill.Value.iconPath);
                 skillData.skillName = skill.Value.skillName;
                 skillData.skillType = skill.Value.skillType;
+                skillData.skillDescription = skill.Value.skillDescription;
                 skillData.skillMinLevel = skill.Value.minLevel;
                 skillData.skillMasterLevel = skill.Value.maxLevel;
                 skillData.skillLevel = skill.Value.skillLevel;
+
+                // skillLevelDescription 리스트 크기 초기화
+                skillData.skillLevelDescription = new List<string>(new string[skillData.skillMasterLevel]);
+
+                // levelEffects의 키는 1부터 시작
+                for (int i = 1; i <= skillData.skillMasterLevel; i++)
+                {
+                    if (skillCollection.skills[skill.Value.skillName].levelEffects.ContainsKey(i))
+                    {
+                        skillData.skillLevelDescription[i - 1] = skillCollection.skills[skill.Value.skillName].levelEffects[i].descrption;
+                    }
+                }
                 skillData.skillIcon = Icon;
                 ////////////////////
 

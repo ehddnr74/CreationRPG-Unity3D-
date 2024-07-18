@@ -5,11 +5,13 @@ using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 
-public class ItemDT : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler, IPointerClickHandler
+public class ItemDT : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler, IPointerClickHandler, IPointerEnterHandler, IPointerExitHandler
 {
     public Item item;
     public int amount;
     public int slot;
+
+    private ItemToolTip itemToolTip;
 
     private Inventory inv;
     private Shop shop;
@@ -27,6 +29,7 @@ public class ItemDT : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHa
         shop = GameObject.Find("Shop").GetComponent<Shop>();
         equip = GameObject.Find("Equip").GetComponent<Equip>();
         qSlot = GameObject.Find("QuickSlot").GetComponent<QuickSlot>();
+        itemToolTip = GameObject.Find("InventoryUI").GetComponent<ItemToolTip>();
     }
 
     public void OnBeginDrag(PointerEventData eventData)
@@ -85,6 +88,7 @@ public class ItemDT : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHa
     {
         if (eventData.button == PointerEventData.InputButton.Right)
         {
+            itemToolTip.Deactivate();
             if (shop.visibleShop) // 상점이 열려있을 때 
             {
                 if (!item.Stackable)
@@ -94,21 +98,24 @@ public class ItemDT : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHa
             }
             else // 상점이 닫혀있을 때 
             {
-                if(item.Type == "Weapon")
+                if (item.requiredLevel <= DataManager.instance.playerData.level) // 착용가능레벨 이상일 때만 착용
                 {
-                    playerController = GameObject.Find("Player").GetComponent<PlayerController>();
+                    if (item.Type == "Weapon")
+                    {
+                        playerController = GameObject.Find("Player").GetComponent<PlayerController>();
 
-                    playerController.EquipWeapon(item.Prefab, item.prefabPath); // 무기 장착
-                                                               
-                    EquipSetting(3, slot); //Equip창의 UI갱신과 Inventory 갱신 
-                }
-                else if(item.Type == "Shield")
-                {
-                    playerController = GameObject.Find("Player").GetComponent<PlayerController>();
+                        playerController.EquipWeapon(item, item.Prefab, item.prefabPath); // 무기 장착
 
-                    playerController.EquipShield(item.Prefab, item.prefabPath); // 실드 장착
+                        EquipSetting(3, slot); //Equip창의 UI갱신과 Inventory 갱신 
+                    }
+                    else if (item.Type == "Shield")
+                    {
+                        playerController = GameObject.Find("Player").GetComponent<PlayerController>();
 
-                    EquipSetting(2, slot); //Equip창의 UI갱신과 Inventory 갱신 
+                        playerController.EquipShield(item,item.Prefab, item.prefabPath); // 실드 장착
+
+                        EquipSetting(2, slot); //Equip창의 UI갱신과 Inventory 갱신 
+                    }
                 }
             }
         }
@@ -139,6 +146,19 @@ public class ItemDT : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHa
             tempColor.a = 1f; // 불투명하게 설정 
             equipImage.GetComponent<Image>().color = tempColor;
         }
+    }
+
+    public void OnPointerEnter(PointerEventData eventData)
+    {
+            // _globalSortingOrderCounter를 static으로 접근
+            MovableUI._globalSortingOrderCounter++;
+            transform.GetComponentInParent<Canvas>().sortingOrder = MovableUI._globalSortingOrderCounter;
+            itemToolTip.Activate(item, amount);
+    }
+
+    public void OnPointerExit(PointerEventData eventData)
+    {
+        itemToolTip.Deactivate();
     }
 
 }

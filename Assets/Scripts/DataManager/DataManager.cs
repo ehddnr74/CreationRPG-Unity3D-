@@ -42,7 +42,7 @@ public class DataManager : MonoBehaviour
 
     private void Update()
     {
-        if(Input.GetKeyDown(KeyCode.U))
+        if(Input.GetKeyDown(KeyCode.Alpha8))
         {
             AddExperience(50);
         }

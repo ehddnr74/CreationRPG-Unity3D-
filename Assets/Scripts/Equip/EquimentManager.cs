@@ -32,6 +32,9 @@ public class EquipmentManager : MonoBehaviour
     private PlayerController playercontroller;
     private Equip equip;
 
+    private Item previousWeaponItem;
+    private Item previousShieldItem;
+
     private void Start()
     {
         playercontroller = GameObject.Find("Player").GetComponent<PlayerController>();
@@ -39,7 +42,7 @@ public class EquipmentManager : MonoBehaviour
         LoadEquippedItems();
     }
 
-    public void EquipItem(GameObject itemPrefab, string slotName, string prefabPath)
+    public void EquipItem(Item item, GameObject itemPrefab, string slotName, string prefabPath)
     {
         EquipmentSlot slot = equipmentSlots.Find(s => s.slotName == slotName);
 
@@ -47,7 +50,28 @@ public class EquipmentManager : MonoBehaviour
         {
             if (slot.currentItem != null)
             {
-                Destroy(slot.currentItem);
+                if (slotName == "Weapon" && itemPrefab != null) // 아이템 교체할 경우
+                {
+                    StatManager.instance.statData.extraAttackPower -= previousWeaponItem.increaseAttackPower;
+                    StatManager.instance.UpdateStatAttackPower();
+                    Destroy(slot.currentItem);
+                }
+                else if (slotName == "Weapon" && itemPrefab == null) // 아이템 해제할 경우 
+                {
+                    previousWeaponItem = null;
+                    Destroy(slot.currentItem);
+                }
+                else if (slotName == "Shield" && itemPrefab != null)
+                {
+                    StatManager.instance.statData.extraDefense -= previousShieldItem.increaseDefense;
+                    StatManager.instance.UpdateStatDefense();
+                    Destroy(slot.currentItem);
+                }
+                else if (slotName == "Shield" && itemPrefab == null) 
+                {
+                    previousShieldItem = null;
+                    Destroy(slot.currentItem);
+                }
             }
 
             if (itemPrefab != null)
@@ -57,13 +81,33 @@ public class EquipmentManager : MonoBehaviour
                 newItem.transform.localRotation = itemPrefab.transform.localRotation;//Quaternion.Euler(slot.rotationOffset);
                 slot.currentItem = newItem;
                 slot.currentItempath = prefabPath;
-                if(slotName == "Weapon")
+                if(slotName == "Weapon" && previousWeaponItem != null)
                 {
                     playercontroller.currentWeapon = slot.currentItem;
+                    StatManager.instance.statData.extraAttackPower += item.increaseAttackPower;
+                    StatManager.instance.UpdateStatAttackPower();
+                    previousWeaponItem = item;
                 }
-                else if(slotName == "Shield")
+                else if(slotName == "Weapon" && previousWeaponItem == null)
+                {
+                    playercontroller.currentWeapon = slot.currentItem;
+                    StatManager.instance.statData.extraAttackPower += item.increaseAttackPower;
+                    StatManager.instance.UpdateStatAttackPower();
+                    previousWeaponItem = item;
+                }
+                else if(slotName == "Shield" && previousShieldItem != null)
                 {
                     playercontroller.currentShield = slot.currentItem;
+                    StatManager.instance.statData.extraDefense += item.increaseDefense;
+                    StatManager.instance.UpdateStatDefense();
+                    previousShieldItem = item;
+                }
+                else if (slotName == "Shield" && previousShieldItem == null)
+                {
+                    playercontroller.currentShield = slot.currentItem;
+                    StatManager.instance.statData.extraDefense += item.increaseDefense;
+                    StatManager.instance.UpdateStatDefense();
+                    previousShieldItem = item;
                 }
             }
             else
@@ -110,9 +154,9 @@ public class EquipmentManager : MonoBehaviour
             foreach (var equippedItem in equippedItems)
             {
                 GameObject itemPrefab = Resources.Load<GameObject>("Prefabs/" + equippedItem.prefabPath);
-                EquipItem(itemPrefab, equippedItem.slotName, equippedItem.prefabPath);
-
                 Item item = ItemDataBase.instance.FetchItemByPrefabPath(equippedItem.prefabPath);
+
+                EquipItem(item, itemPrefab, equippedItem.slotName, equippedItem.prefabPath);
 
                 if (item.Type == "Weapon")
                 {

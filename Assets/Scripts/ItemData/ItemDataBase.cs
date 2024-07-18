@@ -86,7 +86,9 @@ public class ItemDataBase : MonoBehaviour
     {
         foreach (Item item in itemData.items)
         {
-            dataBase.Add(new Item(item.ID, item.Name, item.Type, item.Description, item.Price, item.SellPrice, item.IconPath, item.Stackable, item.ToolTipPath, item.prefabPath, item.dropPrefabPath, item.gold));
+            dataBase.Add(new Item(item.ID, item.Name, item.Type, item.Description, item.Price, item.SellPrice, item.IconPath,
+                item.Stackable, item.ToolTipPath, item.prefabPath, item.dropPrefabPath, item.gold,
+                item.requiredLevel, item.increaseAttackPower, item.increaseDefense, item.increaseMaxHP, item.increaseMoveSpeed));
         }
     }
 
@@ -110,6 +112,12 @@ public class Item
 {
     public int ID { get; set; }
     public string Name { get; set; }
+
+    public int requiredLevel { get; set; }
+    public int increaseAttackPower { get; set; }
+    public int increaseDefense { get; set; }
+    public int increaseMaxHP { get; set; }
+    public int increaseMoveSpeed { get; set; }
     public string Type { get; set; }
     public string Description { get; set; }
     public int Price { get; set; }
@@ -136,7 +144,9 @@ public class Item
 
     public GameObject DropPrefab { get; set; } // 드랍 프리펩
 
-    public Item(int id, string name, string type, string description, int price, int sellPrice, string iconPath, bool stackable, string toolTipPath, string prefabPath, string dropPrefabPath, int gold)
+    public Item(int id, string name, string type, string description, int price, int sellPrice, string iconPath,
+        bool stackable, string toolTipPath, string prefabPath, string dropPrefabPath, int gold,
+        int requiredLevel, int increaseAttackPower, int increaseDefense, int increaseMaxHP, int increaseMoveSpeed)
     {
         this.ID = id;
         this.Name = name;
@@ -154,7 +164,12 @@ public class Item
         this.dropPrefabPath = dropPrefabPath;
         this.DropPrefab = Resources.Load<GameObject>("Prefabs/" + dropPrefabPath); // 드랍 프리펩 로드 
         this.gold = gold;
-    }
+        this.requiredLevel = requiredLevel;
+        this.increaseAttackPower = increaseAttackPower;
+        this.increaseDefense = increaseDefense;
+        this.increaseMaxHP = increaseMaxHP;
+        this.increaseMoveSpeed = increaseMoveSpeed;
+}
 
     public Item()
     {

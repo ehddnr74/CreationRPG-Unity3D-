@@ -114,6 +114,7 @@ public class Inventory : MonoBehaviour
     private void OnCancelButtonClick()
     {
         confirmationDialog.SetActive(false);
+        DialogManager.instance.visibleShopDialogs = false;
     }
 
 
@@ -181,11 +182,21 @@ public class Inventory : MonoBehaviour
     private void OnStackableCancelButtonClick()
     {
         stackableConfirmationDialog.SetActive(false);
+        DialogManager.instance.visibleShopDialogs = false;
     }
 
     public void AddItem(int id)
     {
         Item itemToAdd = ItemDataBase.instance.FetchItemByID(id);
+
+        ///*if (QuestManager.instance.questData.quests[1].status == "진행중")*/
+        //{
+        //    if (itemToAdd.Name == "전설의 체력물약") // 1레벨 퀘스트 플래그 
+        //    {
+
+        //    }
+        //}
+
         if (itemToAdd.Stackable && CheckIfItemIsInInventory(itemToAdd))
         {
             for (int i = 0; i < items.Count; i++)
@@ -299,6 +310,34 @@ public class Inventory : MonoBehaviour
                     // 수량이 1인 경우 아이템을 제거
                     items[i] = new Item();
                     Destroy(slots[i].transform.GetChild(0).gameObject);
+                }
+
+                itemsChanged = true; // 아이템이 제거되었을 때 플래그 설정
+                break;
+            }
+        }
+    }
+    public void RemoveItem(int id, int amount, bool empty) // 퀘스트 완료할 경우만 쓸 것 
+    {
+        for (int i = 0; i < items.Count; i++)
+        {
+            if (items[i].ID == id)
+            {
+                ItemDT data = slots[i].transform.GetChild(0).GetComponent<ItemDT>();
+                if (data.amount > amount)
+                {
+                    // 스택 가능한 아이템의 경우 수량을 감소시킴
+                    data.amount -= amount;
+                }
+                else if(data.amount == amount)
+                {
+                    data.amount -= amount;
+                    items[i] = new Item();
+                    Destroy(slots[i].transform.GetChild(0).gameObject);
+                }
+                else if(data.amount < amount)
+                {
+                    return;
                 }
 
                 itemsChanged = true; // 아이템이 제거되었을 때 플래그 설정

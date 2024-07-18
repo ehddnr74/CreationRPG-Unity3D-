@@ -84,6 +84,14 @@ public class SoulEater : MonoBehaviour
         mouthCollider.enabled = true;
         currentHealth = maxHealth; // 초기 체력을 최대 체력으로 설정
         DropItems(); // 아이템 드랍 로직 추가
+        if (QuestManager.instance.questData.quests[0].status == "진행중")
+        {
+            if (QuestManager.instance.questData.quests[0].currentKillCount < QuestManager.instance.questData.quests[0].targetKillCount)
+            {
+                QuestManager.instance.questData.quests[0].currentKillCount++;
+                QuestManager.instance.SaveQuests();
+            }
+        }
         monsterSpawner.DespawnMonster(gameObject); // 몬스터를 풀로 반환
     }
 
