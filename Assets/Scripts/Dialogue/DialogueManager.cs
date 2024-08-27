@@ -133,6 +133,7 @@ public class DialogueManager : MonoBehaviour
 
         string replaceText = dialogues[lineCount].contexts[contextCount];
         replaceText = replaceText.Replace("'", ",");
+        replaceText = replaceText.Replace("+", DataManager.instance.playerData.name);
 
         string replaceNameText = dialogues[lineCount].name;
 
@@ -149,9 +150,40 @@ public class DialogueManager : MonoBehaviour
             dialogueNameText.text = nameText;
         }
 
+        bool textWhite = false, textRed = false;
+        bool textIgnore = false;
+
         for (int i=0;i< replaceText.Length;i++)
         {
-            dialogueText.text += replaceText[i];
+            switch(replaceText[i])
+            {
+                case '¨ã':
+                    textWhite = true;
+                    textRed = false;
+                    textIgnore = true;
+                    break;
+                case '¨Þ':
+                    textWhite = false;
+                    textRed = true;
+                    textIgnore = true;
+                    break;
+            }
+
+            string textLetter = replaceText[i].ToString();
+
+            if(!textIgnore)
+            {
+                if(textWhite)
+                {
+                    textLetter = "<color=#ffffff>" + textLetter + "</color>";
+                }
+                else if(textRed)
+                {
+                    textLetter = "<color=#FF0000>" + textLetter + "</color>";
+                }
+                dialogueText.text += textLetter;
+            }
+            textIgnore = false;
 
             yield return new WaitForSeconds(textDelay);
         }

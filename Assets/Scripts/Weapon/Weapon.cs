@@ -5,7 +5,6 @@ using UnityEngine;
 public class Weapon : MonoBehaviour
 {
     Collider col;
-    // Start is called before the first frame update
     TrailRenderer trailRenderer;
     void Start()
     {

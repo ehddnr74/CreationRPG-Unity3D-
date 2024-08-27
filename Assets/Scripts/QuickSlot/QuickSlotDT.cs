@@ -18,11 +18,16 @@ public class QuickSlotDT : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndD
     private Transform originalParent;
     private int originalSiblingIndex;
 
+    private CanvasGroup canvasGroup;
+    private Canvas canvas;
+
     private GridLayoutGroup parentLayoutGroup;
 
     private void Start()
     {
         quickSlot = GameObject.Find("QuickSlot").GetComponent<QuickSlot>();
+        canvasGroup = GetComponent<CanvasGroup>();
+        canvas = GetComponentInParent<Canvas>();
     }
 
     public void OnBeginDrag(PointerEventData eventData)
@@ -40,7 +45,7 @@ public class QuickSlotDT : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndD
 
             this.transform.SetParent(originalParent.parent);
             this.transform.position = eventData.position - offset;
-            GetComponent<CanvasGroup>().blocksRaycasts = false;
+            canvasGroup.blocksRaycasts = false;
         }
     }
 
@@ -69,7 +74,7 @@ public class QuickSlotDT : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndD
                     parentLayoutGroup.enabled = true; // 드래그가 끝나면 레이아웃 그룹 활성화
 
                 quickSlot.SwapItems(slotNum, targetSlotDT.slotNum);
-                GetComponent<CanvasGroup>().blocksRaycasts = true;
+                canvasGroup.blocksRaycasts = true;
             }
         }
         else
@@ -79,9 +84,9 @@ public class QuickSlotDT : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndD
             this.transform.position = originalParent.position;
 
             if (parentLayoutGroup != null)
-                parentLayoutGroup.enabled = true; // 드래그가 끝나면 레이아웃 그룹 활성화
+            parentLayoutGroup.enabled = true; // 드래그가 끝나면 레이아웃 그룹 활성화
 
-            GetComponent<CanvasGroup>().blocksRaycasts = true;
+            canvasGroup.blocksRaycasts = true;
         }
         quickSlot.itemsChanged = true;
     }
@@ -90,12 +95,17 @@ public class QuickSlotDT : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndD
     {
         if (eventData.button == PointerEventData.InputButton.Right)
         {
-            // 마우스 오른쪽 클릭 시 아이템 아이콘을 지우고, 해당 슬롯의 정보를 초기화
-            itemIcon = null;
-            GetComponent<Image>().sprite = null;
-            GetComponent<Image>().color = new Color(1f, 1f, 1f, 0f); // 투명하게 설정
-            itemAmount = 0;
+            if (iconPath != "Inventory" && iconPath != "Quest" && iconPath != "Equip"
+                && iconPath != "Skill" && iconPath != "Stat" && iconPath != "Interaction")
+            {
+                // 마우스 오른쪽 클릭 시 아이템 아이콘을 지우고, 해당 슬롯의 정보를 초기화
+                itemIcon = null;
+                GetComponent<Image>().sprite = null;
+                GetComponent<Image>().color = new Color(1f, 1f, 1f, 0f); // 투명하게 설정
+                itemAmount = 0;
+
+                quickSlot.itemsChanged = true;
+            }
         }
-        quickSlot.itemsChanged = true;
     }
 }

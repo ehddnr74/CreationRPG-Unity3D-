@@ -18,7 +18,6 @@ public class Inventory : MonoBehaviour
 
     public GameObject content;
 
-    ItemDataBase itemdataBase;
     private QuickSlot quickSlot;
 
     public int slotAmount;
@@ -48,7 +47,6 @@ public class Inventory : MonoBehaviour
     void Start()
     {
         cameraController = GameObject.Find("Camera").GetComponent<CameraController>();
-        itemdataBase = GameObject.Find("ItemDataBase").GetComponent<ItemDataBase>();
         quickSlot = GameObject.Find("QuickSlot").GetComponent<QuickSlot>();
 
         slotPanel = GameObject.Find("Slot Panel");
@@ -81,6 +79,22 @@ public class Inventory : MonoBehaviour
         DialogManager.instance.ShowDialog(confirmationDialog);
         confirmationImage.sprite = item.Icon;
         confirmationText.text = $"'{item.Name}'을(를) 판매하시겠습니까?"; // 확인 메시지 설정
+        if (item.Name == "혈검 : 적")
+        {
+            confirmationText.text = $"<color=red>'{item.Name}'</color>을(를) 판매하시겠습니까?";
+        }
+        else if (item.Name == "성검 : 청")
+        {
+            confirmationText.text = $"<color=#00FFFF>'{item.Name}'</color>을(를) 판매하시겠습니까?";
+        }
+        else if (item.Name == "광검 : 황")
+        {
+            confirmationText.text = $"<color=yellow>'{item.Name}'</color>을(를) 판매하시겠습니까?";
+        }
+        else
+        {
+            confirmationText.text = $"<color=white>'{item.Name}'</color>을(를) 판매하시겠습니까?";
+        }
         confirmButton.onClick.RemoveAllListeners();
         confirmButton.onClick.AddListener(() => ConfirmSellItem(item, slot));
     }
@@ -100,6 +114,7 @@ public class Inventory : MonoBehaviour
     private void OnCancelButtonClick()
     {
         confirmationDialog.SetActive(false);
+        DialogManager.instance.visibleShopDialogs = false;
     }
 
 
@@ -167,11 +182,21 @@ public class Inventory : MonoBehaviour
     private void OnStackableCancelButtonClick()
     {
         stackableConfirmationDialog.SetActive(false);
+        DialogManager.instance.visibleShopDialogs = false;
     }
 
     public void AddItem(int id)
     {
-        Item itemToAdd = itemdataBase.FetchItemByID(id);
+        Item itemToAdd = ItemDataBase.instance.FetchItemByID(id);
+
+        ///*if (QuestManager.instance.questData.quests[1].status == "진행중")*/
+        //{
+        //    if (itemToAdd.Name == "전설의 체력물약") // 1레벨 퀘스트 플래그 
+        //    {
+
+        //    }
+        //}
+
         if (itemToAdd.Stackable && CheckIfItemIsInInventory(itemToAdd))
         {
             for (int i = 0; i < items.Count; i++)
@@ -210,7 +235,7 @@ public class Inventory : MonoBehaviour
 
     public void AddItem(int id, int slotNum, int a) // 장비 착용할 때 
     {
-        Item itemToAdd = itemdataBase.FetchItemByID(id);
+        Item itemToAdd = ItemDataBase.instance.FetchItemByID(id);
 
         if (items[slotNum].ID == -1)
         {
@@ -231,7 +256,7 @@ public class Inventory : MonoBehaviour
 
     public void AddItem(int id, int amount)
     {
-        Item itemToAdd = itemdataBase.FetchItemByID(id);
+        Item itemToAdd = ItemDataBase.instance.FetchItemByID(id);
         if (itemToAdd.Stackable && CheckIfItemIsInInventory(itemToAdd))
         {
             for (int i = 0; i < items.Count; i++)
@@ -285,6 +310,34 @@ public class Inventory : MonoBehaviour
                     // 수량이 1인 경우 아이템을 제거
                     items[i] = new Item();
                     Destroy(slots[i].transform.GetChild(0).gameObject);
+                }
+
+                itemsChanged = true; // 아이템이 제거되었을 때 플래그 설정
+                break;
+            }
+        }
+    }
+    public void RemoveItem(int id, int amount, bool empty) // 퀘스트 완료할 경우만 쓸 것 
+    {
+        for (int i = 0; i < items.Count; i++)
+        {
+            if (items[i].ID == id)
+            {
+                ItemDT data = slots[i].transform.GetChild(0).GetComponent<ItemDT>();
+                if (data.amount > amount)
+                {
+                    // 스택 가능한 아이템의 경우 수량을 감소시킴
+                    data.amount -= amount;
+                }
+                else if(data.amount == amount)
+                {
+                    data.amount -= amount;
+                    items[i] = new Item();
+                    Destroy(slots[i].transform.GetChild(0).gameObject);
+                }
+                else if(data.amount < amount)
+                {
+                    return;
                 }
 
                 itemsChanged = true; // 아이템이 제거되었을 때 플래그 설정
@@ -374,7 +427,7 @@ public class Inventory : MonoBehaviour
             // 인벤토리 정보를 기반으로 슬롯에 아이템 배치
             foreach (InventoryItem inventoryItem in inventoryItems)
             {
-                Item item = itemdataBase.FetchItemByID(inventoryItem.ID);
+                Item item = ItemDataBase.instance.FetchItemByID(inventoryItem.ID);
                 items[inventoryItem.slotnum] = item;
 
                 // 슬롯에 아이템 배치
@@ -385,14 +438,6 @@ public class Inventory : MonoBehaviour
     }
     void Update()
     {
-        if(Input.GetKeyDown(KeyCode.I))
-        {
-            activeInventory = !activeInventory;
-            inventoryPanel.SetActive(activeInventory);
-
-            cameraController.SetUIActiveCount(activeInventory);
-        }
-
         // 아이템이 변경된 경우 인벤토리를 저장
         if (itemsChanged)
         {

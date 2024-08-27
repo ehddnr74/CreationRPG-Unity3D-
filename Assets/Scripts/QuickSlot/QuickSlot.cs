@@ -17,11 +17,14 @@ public class QuickSlot : MonoBehaviour
     public GameObject quickSlotItem;
     public GameObject keyCodeRound;
 
-
+    private AnimationEventForwarder mAnimationEventForwarder;
     private Inventory inv;
-    ItemDataBase itemdataBase;
+    private Equip equip;
+    private CameraController cameraController;
 
     public bool itemsChanged = false;
+    public bool interactable = false;
+    public bool checkInteraction = false;
 
     public List<GameObject> slots = new List<GameObject>();
 
@@ -44,8 +47,10 @@ public class QuickSlot : MonoBehaviour
     // Start is called before the first frame update
     private void Start()
     {
+        mAnimationEventForwarder = GameObject.Find("Paladin").GetComponent<AnimationEventForwarder>();
+        equip = GameObject.Find("Equip").GetComponent<Equip>();
+        cameraController = GameObject.Find("Camera").GetComponent<CameraController>();
         inv = GameObject.Find("Inventory").GetComponent<Inventory>();
-        itemdataBase = GameObject.Find("ItemDataBase").GetComponent<ItemDataBase>();
 
         for (int i = 0; i < slotAmount; i++)
         {
@@ -60,14 +65,14 @@ public class QuickSlot : MonoBehaviour
 
     private void Update()
     {
-        //// 매핑된 키를 검사하여 해당 슬롯을 활성화
-        //foreach (var kvp in keyToSlotMap)
-        //{
-        //    if (Input.GetKeyDown(kvp.Key))
-        //    {
-        //        ActivateSlot(kvp.Value);
-        //    }
-        //}
+        // 매핑된 키를 검사하여 해당 슬롯을 활성화
+        foreach (var kvp in keyToSlotMap)
+        {
+            if (Input.GetKeyDown(kvp.Key))
+            {
+                ActivateSlot(kvp.Value);
+            }
+        }
         if (itemsChanged)
         {
             itemsChanged = false;
@@ -253,13 +258,141 @@ public class QuickSlot : MonoBehaviour
         {
             QuickSlotDT quickSlotDT = slots[slotIndex].GetComponentInChildren<QuickSlotDT>();
 
-            if(quickSlotDT.iconPath == "hp")
+            /////// Use Item
+            if (quickSlotDT.iconPath == "hp")
             {
-                Debug.Log("Use HP Potion");
+                if (quickSlotDT.itemAmount > 0)
+                {
+                    Item hpPotion = ItemDataBase.instance.FetchItemByIconPath(quickSlotDT.iconPath);
+                    StatManager.instance.AddHP(300); // Json에 recoveryHP 추가 해도됨 일단 임시로 ...
+                    inv.RemoveItem(hpPotion.ID);
+                    RemoveQuicktSlotItem(quickSlotDT.iconPath, slotIndex, 1);
+                }
             }
+
             if (quickSlotDT.iconPath == "mp")
             {
-                Debug.Log("Use MP Potion");
+                if (quickSlotDT.itemAmount > 0)
+                {
+                    Item mpPotion = ItemDataBase.instance.FetchItemByIconPath(quickSlotDT.iconPath);
+                    StatManager.instance.AddMP(300); // Json에 recoveryMP 추가 해도됨 일단 임시로 ...
+                    inv.RemoveItem(mpPotion.ID);
+                    RemoveQuicktSlotItem(quickSlotDT.iconPath, slotIndex, 1);
+                }
+            }
+
+
+            /////// Use UI 
+            if (quickSlotDT.iconPath == "Inventory")
+            {
+                inv.activeInventory = !inv.activeInventory;
+                inv.inventoryPanel.SetActive(inv.activeInventory);
+
+                cameraController.SetUIActiveCount(inv.activeInventory);
+            }
+
+            if (quickSlotDT.iconPath == "Quest")
+            {
+                QuestManager.instance.visibleQuest = !QuestManager.instance.visibleQuest;
+                QuestManager.instance.questPanel.SetActive(QuestManager.instance.visibleQuest);
+
+                cameraController.SetUIActiveCount(QuestManager.instance.visibleQuest);
+            }
+
+            if (quickSlotDT.iconPath == "Equip")
+            {
+                equip.visibleEquip = !equip.visibleEquip;
+                equip.equipPanel.SetActive(equip.visibleEquip);
+
+                cameraController.SetUIActiveCount(equip.visibleEquip);
+            }
+
+            if (quickSlotDT.iconPath == "Skill")
+            {
+                SkillManager.instance.visibleSkill = !SkillManager.instance.visibleSkill;
+                SkillManager.instance.skillPanel.SetActive(SkillManager.instance.visibleSkill);
+
+                cameraController.SetUIActiveCount(SkillManager.instance.visibleSkill);
+            }
+
+            if (quickSlotDT.iconPath == "Stat")
+            {
+                StatManager.instance.visibleStat = !StatManager.instance.visibleStat;
+                StatManager.instance.statPanel.SetActive(StatManager.instance.visibleStat);
+
+                cameraController.SetUIActiveCount(StatManager.instance.visibleStat);
+            }
+
+            if (quickSlotDT.iconPath == "Interaction")
+            {
+                if (interactable && !checkInteraction)
+                {
+                    checkInteraction = true;
+                }
+            }
+
+            ///////  Use Skill
+            if (quickSlotDT.iconPath == "Nature_10") // 벽력일섬
+            {
+                int level = SkillManager.instance.skillCollection.skills["벽력일섬"].skillLevel;
+                if (level > 0)
+                {
+                    if (mAnimationEventForwarder.swordSkill)
+                    {
+                        mAnimationEventForwarder.lightningstrike = true;
+                        mAnimationEventForwarder.comboStep = 2;
+                        mAnimationEventForwarder.ComboAttackTrigger();
+                    }
+                }
+            }
+
+            if (quickSlotDT.iconPath == "Fire_10") // 극악무도
+            {
+                int level = SkillManager.instance.skillCollection.skills["극악무도"].skillLevel;
+                if (level > 0)
+                {
+                    if (mAnimationEventForwarder.swordSkill)
+                    {
+                        mAnimationEventForwarder.atrocities = true;
+                        mAnimationEventForwarder.comboStep = 2;
+                        mAnimationEventForwarder.ComboAttackTrigger();
+                    }
+                }
+            }
+            if (quickSlotDT.iconPath == "Fire_12") // 천재지변
+            {
+                int level = SkillManager.instance.skillCollection.skills["천재지변"].skillLevel;
+                if (level > 0)
+                {
+                    if (mAnimationEventForwarder.swordSkill)
+                    {
+                        mAnimationEventForwarder.naturaldisaster = true;
+                        mAnimationEventForwarder.comboStep = 2;
+                        mAnimationEventForwarder.ComboAttackTrigger();
+                    }
+                }
+            }
+            if (quickSlotDT.iconPath == "Nature_7") // 금강불괴
+            {
+                int level = SkillManager.instance.skillCollection.skills["금강불괴"].skillLevel;
+
+                if (level > 0)
+                {
+                    BuffManager.instance.ActivateBuff("금강불괴", quickSlotDT.itemIcon, SkillManager.instance.skillCollection.skills["금강불괴"].levelEffects[level].buffDuration);
+                    StatManager.instance.UpdateStatActiveHyperBody();
+                }
+            }
+
+            if (quickSlotDT.iconPath == "Dark_11") // 화룡점정
+            {
+                int level = SkillManager.instance.skillCollection.skills["화룡점정"].skillLevel;
+
+                if (level > 0)
+                {
+                    BuffManager.instance.ActivateBuff("화룡점정", quickSlotDT.itemIcon, SkillManager.instance.skillCollection.skills["화룡점정"].levelEffects[level].buffDuration);
+                    StatManager.instance.statData.criticalProbability = StatManager.instance.statData.originCriticalProbability + (int)SkillManager.instance.skillCollection.skills["화룡점정"].levelEffects[level].criticalChanceIncrease;
+                    StatManager.instance.UpdateStatActiveCriticalSkill();
+                }
             }
         }
     }

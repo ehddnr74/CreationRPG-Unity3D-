@@ -1,12 +1,12 @@
 [
   {
-    "slotNum": 22,
-    "iconPath": "hp",
-    "itemAmount": 81
+    "slotNum": 10,
+    "iconPath": "mp",
+    "itemAmount": 1
   },
   {
-    "slotNum": 23,
-    "iconPath": "mp",
-    "itemAmount": 33
+    "slotNum": 11,
+    "iconPath": "hp",
+    "itemAmount": 1
   }
 ]

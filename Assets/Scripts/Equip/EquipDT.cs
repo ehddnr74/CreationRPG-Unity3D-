@@ -8,13 +8,11 @@ public class EquipDT : MonoBehaviour, IPointerClickHandler
 {
     public GameObject item;
     private Inventory inv;
-    private ItemDataBase itemDataBase;
     private PlayerController playerController;
 
     // Start is called before the first frame update
     void Start()
     {
-        itemDataBase = GameObject.Find("ItemDataBase").GetComponent<ItemDataBase>();
         inv = GameObject.Find("Inventory").GetComponent<Inventory>();
         playerController = GameObject.Find("Player").GetComponent<PlayerController>();
     }
@@ -29,7 +27,7 @@ public class EquipDT : MonoBehaviour, IPointerClickHandler
     void UnEquip()
     {
         Image itemIcon = gameObject.GetComponent<Image>();
-        Item item = itemDataBase.FetchItemByIcon(itemIcon.sprite);
+        Item item = ItemDataBase.instance.FetchItemByIcon(itemIcon.sprite);
 
         if (item != null)
         {
@@ -37,11 +35,15 @@ public class EquipDT : MonoBehaviour, IPointerClickHandler
             {
                 if (item.Type == "Weapon")
                 {
-                    playerController.EquipWeapon(null, item.prefabPath);  // 무기 장착 해제 
+                    StatManager.instance.statData.extraAttackPower -= item.increaseAttackPower;
+                    StatManager.instance.UpdateStatAttackPower();
+                    playerController.EquipWeapon(item, null, item.prefabPath);  // 무기 장착 해제 
                 }
                 else if (item.Type == "Shield")
                 {
-                    playerController.EquipShield(null, item.prefabPath); // 방패 장착 해제
+                    StatManager.instance.statData.extraDefense -= item.increaseDefense;
+                    StatManager.instance.UpdateStatDefense();
+                    playerController.EquipShield(item, null, item.prefabPath); // 방패 장착 해제
                 }
 
                 inv.AddItem(item.ID);

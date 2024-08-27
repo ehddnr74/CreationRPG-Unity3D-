@@ -28,6 +28,7 @@ public class PlayerController : MonoBehaviour
     public float smoothness = 10f;
 
     public GameObject currentWeapon;
+    public GameObject currentShield;
 
     private void Start()
     {
@@ -135,14 +136,14 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    public void EquipWeapon(GameObject weaponPrefab, string prefabPath)
+    public void EquipWeapon(Item item, GameObject weaponPrefab, string prefabPath)
     {
-        equipmentManager.EquipItem(weaponPrefab, "Weapon", prefabPath);
+        equipmentManager.EquipItem(item,weaponPrefab, "Weapon", prefabPath);
         equipmentManager.SaveEquippedItems();
     }
-    public void EquipShield(GameObject shieldPrefab, string prefabPath)
+    public void EquipShield(Item item, GameObject shieldPrefab, string prefabPath)
     {
-        equipmentManager.EquipItem(shieldPrefab, "Shield", prefabPath);
+        equipmentManager.EquipItem(item, shieldPrefab, "Shield", prefabPath);
         equipmentManager.SaveEquippedItems();
     }
 

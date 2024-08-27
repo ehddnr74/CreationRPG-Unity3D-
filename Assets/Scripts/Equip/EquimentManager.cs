@@ -23,26 +23,26 @@ public class EquipmentManager : MonoBehaviour
     {
         public string slotName;
         public Transform mountPoint;
-        public Vector3 rotationOffset;
         public GameObject currentItem;
         public string currentItempath;
     }
 
     public List<EquipmentSlot> equipmentSlots;
 
-    private ItemDataBase itemDataBase;
     private PlayerController playercontroller;
     private Equip equip;
 
+    private Item previousWeaponItem;
+    private Item previousShieldItem;
+
     private void Start()
     {
-        itemDataBase = GameObject.Find("ItemDataBase").GetComponent<ItemDataBase>();
         playercontroller = GameObject.Find("Player").GetComponent<PlayerController>();
         equip = GameObject.Find("Equip").GetComponent<Equip>();
         LoadEquippedItems();
     }
 
-    public void EquipItem(GameObject itemPrefab, string slotName, string prefabPath)
+    public void EquipItem(Item item, GameObject itemPrefab, string slotName, string prefabPath)
     {
         EquipmentSlot slot = equipmentSlots.Find(s => s.slotName == slotName);
 
@@ -50,19 +50,64 @@ public class EquipmentManager : MonoBehaviour
         {
             if (slot.currentItem != null)
             {
-                Destroy(slot.currentItem);
+                if (slotName == "Weapon" && itemPrefab != null) // 아이템 교체할 경우
+                {
+                    StatManager.instance.statData.extraAttackPower -= previousWeaponItem.increaseAttackPower;
+                    StatManager.instance.UpdateStatAttackPower();
+                    Destroy(slot.currentItem);
+                }
+                else if (slotName == "Weapon" && itemPrefab == null) // 아이템 해제할 경우 
+                {
+                    previousWeaponItem = null;
+                    Destroy(slot.currentItem);
+                }
+                else if (slotName == "Shield" && itemPrefab != null)
+                {
+                    StatManager.instance.statData.extraDefense -= previousShieldItem.increaseDefense;
+                    StatManager.instance.UpdateStatDefense();
+                    Destroy(slot.currentItem);
+                }
+                else if (slotName == "Shield" && itemPrefab == null) 
+                {
+                    previousShieldItem = null;
+                    Destroy(slot.currentItem);
+                }
             }
 
             if (itemPrefab != null)
             {
                 GameObject newItem = Instantiate(itemPrefab, slot.mountPoint);
-                newItem.transform.localPosition = Vector3.zero;
-                newItem.transform.localRotation = Quaternion.Euler(slot.rotationOffset);
+                newItem.transform.localPosition = itemPrefab.transform.localPosition;
+                newItem.transform.localRotation = itemPrefab.transform.localRotation;//Quaternion.Euler(slot.rotationOffset);
                 slot.currentItem = newItem;
                 slot.currentItempath = prefabPath;
-                if(slotName == "Weapon")
+                if(slotName == "Weapon" && previousWeaponItem != null)
                 {
                     playercontroller.currentWeapon = slot.currentItem;
+                    StatManager.instance.statData.extraAttackPower += item.increaseAttackPower;
+                    StatManager.instance.UpdateStatAttackPower();
+                    previousWeaponItem = item;
+                }
+                else if(slotName == "Weapon" && previousWeaponItem == null)
+                {
+                    playercontroller.currentWeapon = slot.currentItem;
+                    StatManager.instance.statData.extraAttackPower += item.increaseAttackPower;
+                    StatManager.instance.UpdateStatAttackPower();
+                    previousWeaponItem = item;
+                }
+                else if(slotName == "Shield" && previousShieldItem != null)
+                {
+                    playercontroller.currentShield = slot.currentItem;
+                    StatManager.instance.statData.extraDefense += item.increaseDefense;
+                    StatManager.instance.UpdateStatDefense();
+                    previousShieldItem = item;
+                }
+                else if (slotName == "Shield" && previousShieldItem == null)
+                {
+                    playercontroller.currentShield = slot.currentItem;
+                    StatManager.instance.statData.extraDefense += item.increaseDefense;
+                    StatManager.instance.UpdateStatDefense();
+                    previousShieldItem = item;
                 }
             }
             else
@@ -80,7 +125,7 @@ public class EquipmentManager : MonoBehaviour
         {
             if (slot.currentItem != null && slot.currentItempath != null)
             {
-                Item item = itemDataBase.FetchItemByPrefabPath(slot.currentItempath);
+                Item item = ItemDataBase.instance.FetchItemByPrefabPath(slot.currentItempath);
 
                 EquippedItem equippedItem = new EquippedItem
                 {
@@ -109,9 +154,9 @@ public class EquipmentManager : MonoBehaviour
             foreach (var equippedItem in equippedItems)
             {
                 GameObject itemPrefab = Resources.Load<GameObject>("Prefabs/" + equippedItem.prefabPath);
-                EquipItem(itemPrefab, equippedItem.slotName, equippedItem.prefabPath);
+                Item item = ItemDataBase.instance.FetchItemByPrefabPath(equippedItem.prefabPath);
 
-                Item item = itemDataBase.FetchItemByPrefabPath(equippedItem.prefabPath);
+                EquipItem(item, itemPrefab, equippedItem.slotName, equippedItem.prefabPath);
 
                 if (item.Type == "Weapon")
                 {
